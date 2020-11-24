@@ -5,7 +5,7 @@ from xml.dom.minidom import Node, Element, parse
 import re
 from lxml import etree  # http://lxml.de/index.html#documentation
 
-class DOMDocumentCompanion :
+class DOMCompanion :
 	def __init__(self, doc = None) :
 		self.doc = doc
 		self.lid = dict()
@@ -130,7 +130,7 @@ class DOMDocumentCompanion :
 
 
 if ( __name__ == "__main__"):
-	cine = DOMDocumentCompanion()
+	cine = DOMCompanion()
 	cine.parse("semaine10.xml", True)
 	print(cine.doc.toxml())
 	print(cine.getElementById('Ka'))

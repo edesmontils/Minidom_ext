@@ -3,7 +3,7 @@
 ## Short presentation
 
 Functions to improve xml.dom.minidom tools in Python.
-class DOMDocumentCompanion :
+class DOMCompanion :
 -	def __init__(self, doc = None) : build a DOM DocumentCompanion
 -	def parse(self, file, validate = False): load en XML file
 -	def enrichXML(self) : adds default attribute and detects IDs
@@ -15,7 +15,7 @@ class DOMDocumentCompanion :
 ## Exemple
 
 ```
-cine = DOMDocumentCompanion()
+cine = DOMCompanion()
 cine.parse("semaine10.xml", True)
 print(cine.doc.toxml())
 print(cine.getElementById('Ka'))
