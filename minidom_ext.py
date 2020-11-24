@@ -130,7 +130,7 @@ class DOMDocumentCompanion :
 
 
 if ( __name__ == "__main__"):
-	cine = DocumentCompanion()
+	cine = DOMDocumentCompanion()
 	cine.parse("semaine10.xml", True)
 	print(cine.doc.toxml())
 	print(cine.getElementById('Ka'))
