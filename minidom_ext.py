@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
-7
+
 from xml.dom.minidom import Node, Element, parse
 import re
 from lxml import etree  # http://lxml.de/index.html#documentation
