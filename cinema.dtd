@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT cinema (periode, salle*, film*) >
+<!ELEMENT periode (date_debut, date_fin) >
+<!ELEMENT date_debut (#PCDATA) >
+<!ELEMENT date_fin (#PCDATA) >
+   <!-- La date est au format ISO8601. Ce format permet de conserver l'ordre des dates,
+   lorsqu'elles sont comparées en tant que chaine de caractères.
+   Elle comprend trois parties séparées par un '-' : 
+   - une année à 4 chiffres ;
+   - un mois sur 2 chiffres compris entre 01 et 12 ;
+   - un numéro de jour sur 2 chiffres compris entre 01 et 31.
+   Par exemple, le 9 février 2011 s'écrit 2011-02-09 .
+   --> 
+<!ELEMENT salle (nom, tel, adresse)>
+<!ATTLIST salle code ID #REQUIRED >
+<!ELEMENT nom (#PCDATA)>
+<!ELEMENT tel (#PCDATA)>
+     <!-- "tel" suit le modèle 0 999 999 999 ou le modèle 09 99 99 99 99 --> 
+<!ATTLIST tel tarif (local | surtaxé) #REQUIRED >
+<!ELEMENT adresse (#PCDATA)>
+<!ELEMENT film (titre, seances*)>
+<!ATTLIST film age CDATA #IMPLIED 
+               annee CDATA #REQUIRED>
+    <!-- "age" en-dessous duquel le film est interdit : entier compris entre 0 et 120 -->
+    <!-- "annee" de production : un entier à 4 chiffres -->
+<!ELEMENT titre (#PCDATA) >
+<!ELEMENT seances (jour+, heure+) >
+<!ATTLIST seances cine IDREF  #REQUIRED
+                  langue (VO|VF) "VF" >
+<!ELEMENT jour (#PCDATA)>
+    <!-- seules valeurs possibles pour "jour" : lun, mar, mer, jeu, ven, sam, dim -->
+<!ELEMENT heure (#PCDATA) >
+    <!-- L'heure est au format ISO8601. 
+    C'est un entier compris entre 00 et 23,
+    suivi de ':', suivi d'un entier compris entre 00 et 59. 
+    Par exemple, 9h30 s'écrit 09:30.
+     -->

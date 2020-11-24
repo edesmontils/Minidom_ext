@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="cinema_0.xsl"?>
+<!DOCTYPE cinema SYSTEM "cinema.dtd">
+<cinema>
+    <!-- La période -->
+    <periode>
+        <date_debut>8 mars 2006</date_debut>
+        <date_fin>14 mars 2006</date_fin>
+    </periode>
+    <!-- Les salles -->
+    <salle code="Ka">
+        <nom>Katorza</nom>
+        <tel tarif="surtaxé">0 892 680 666</tel>
+        <adresse>3 rue Corneille Nantes</adresse>
+    </salle>
+    <salle code="Co">
+        <nom>Concorde</nom>
+        <tel tarif="local">02 40 46 25 29</tel>
+        <adresse>79 boulevard de l'égalité Nantes</adresse>
+    </salle>
+    <!-- Les films -->
+    <film annee="2004">
+        <titre>Le secret de Brokeback Mountain</titre>
+        <seances cine="Ka" langue="VO">
+            <jour>mar</jour>
+            <jour>mer</jour>
+            <heure>14h10</heure>
+            <heure>22h</heure>
+        </seances>
+        <seances cine="Ka" langue="VF">
+            <jour>jeu</jour>
+            <jour>dim</jour>
+            <heure>16h45</heure>
+        </seances>
+        <seances cine="Co" langue="VO">
+            <jour>lun</jour>
+            <jour>mer</jour>
+            <jour>ven</jour>
+            <jour>sam</jour>
+            <jour>dim</jour>
+            <heure>16h</heure>
+        </seances>
+        <seances cine="Co" langue="VO">
+            <jour>mar</jour>
+            <jour>mer</jour>
+            <jour>jeu</jour>
+            <jour>ven</jour>
+            <jour>sam</jour>
+            <jour>dim</jour>
+            <heure>20h45</heure>
+        </seances>
+        <seances cine="Ka" langue="VO">
+            <jour>sam</jour>
+            <heure>19h20</heure>
+        </seances>
+    </film>
+    <film annee="2005" age="12">
+        <titre>Lord of war</titre>
+        <seances cine="Co" langue="VO">
+            <jour>jeu</jour>
+            <jour>sam</jour>
+            <heure>20h45</heure>
+        </seances>
+    </film>
+    <film annee="2005">
+        <titre>Le nouveau monde</titre>
+        <seances cine="Ka" langue="VO">
+            <jour>mar</jour>
+            <jour>mer</jour>
+            <jour>dim</jour>
+            <heure>19h20</heure>
+        </seances>
+        <seances cine="Ka" langue="VO">
+            <jour>jeu</jour>
+            <jour>sam</jour>
+            <heure>14h10</heure>
+            <heure>22h</heure>
+        </seances>
+    </film>
+</cinema>
