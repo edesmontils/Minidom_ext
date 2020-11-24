@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="cinema_0.xsl"?>
 <!DOCTYPE cinema SYSTEM "cinema.dtd">
+<?xml-stylesheet type="text/xsl" href="cinema_0.xsl"?>
 <cinema>
     <!-- La période -->
     <periode>
