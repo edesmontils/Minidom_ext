@@ -5,7 +5,7 @@ from xml.dom.minidom import Node, Element, parse
 import re
 from lxml import etree  # http://lxml.de/index.html#documentation
 
-class DocumentCompanion :
+class DOMDocumentCompanion :
 	def __init__(self, doc = None) :
 		self.doc = doc
 		self.lid = dict()
@@ -16,6 +16,8 @@ class DocumentCompanion :
 		self.doc = parse(file)
 		if validate :
 			self.validate()
+		else :
+			self.enrichXML()
 
 	def enrichXML(self) :
 		self.lid = dict()
