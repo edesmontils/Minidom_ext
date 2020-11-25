@@ -27,6 +27,7 @@ print(cine.toLighter().toxml())
 ## Links
 
 [1] Python 'minidom' : https://docs.python.org/3/library/xml.dom.minidom.html
+
 [2] DOM using Python : https://docs.python.org/3/library/xml.dom.html
 
 (c) E. Desmontils, University of Nantes, november 2020
