@@ -3,6 +3,7 @@
 ## Short presentation
 
 Functions to improve xml.dom.minidom tools in Python.
+
 class DOMCompanion :
 -	def __init__(self, doc = None) : build a DOM DocumentCompanion
 -	def parse(self, file, validate = False): load en XML file
