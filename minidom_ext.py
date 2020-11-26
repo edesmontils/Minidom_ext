@@ -5,9 +5,11 @@
 	Functions to improve xml.dom.minidom tools in Python.
 """
 import os
-from xml.dom.minidom import Node, Element, parse
+from xml.dom.minidom import Node, Element, parse, parseString
 import re
 from lxml import etree  # http://lxml.de/index.html#documentation
+
+# pdoc3 --html --force minidom_ext.py
 
 #==================================================
 #============ Tools ===============================
@@ -75,11 +77,11 @@ class DOMCompanion :
 			See Also
 			--------
 			`DOMCompanion.validate`
-			`DOMCompanion.enrichXML`
 
 			Notes
 			-----
 			if a DTD is specified, uses it to add default attributes and to collect IDs
+			See https://docs.python.org/3/library/xml.dom.minidom.html
 		"""
 		if existFile(file) :
 			self.doc = parse(file)
@@ -87,7 +89,36 @@ class DOMCompanion :
 			if validate :
 				self.validate()
 			else :
-				self.enrichXML()
+				self.__enrichXML()
+
+	# ===========================================================================================
+	def parseString(self, xml, validate = False):
+		""" 
+			to load an XML string
+
+			Parameters
+			----------
+			xml : str
+				the string that contains the XML
+
+			validate : boolean, optional
+				flag to validate the XML file if it contains a Doctype section
+
+			See Also
+			--------
+			`DOMCompanion.validate`
+
+			Notes
+			-----
+			if a DTD is specified, uses it to add default attributes and to collect IDs
+			See https://docs.python.org/3/library/xml.dom.minidom.html
+		"""
+		self.doc = parseString(xml)
+		self.documentElement = self.doc.documentElement
+		if validate :
+			self.validate()
+		else :
+			self.__enrichXML()
 
 	# ===========================================================================================
 	def getElementsByTagName(self, name) :
@@ -147,13 +178,9 @@ class DOMCompanion :
 			-------
 			DOMCompaniom
 				itself
-
-			See Also
-			--------
-			`DOMCompanion.purgeDOM`
 		"""
 		if self.doc is not None :
-			self.purgeDOM(self.doc, del_spaces, del_comments, del_pi)
+			self.__purgeDOM(self.doc, del_spaces, del_comments, del_pi)
 		return self
 
 	# ===========================================================================================
@@ -165,10 +192,6 @@ class DOMCompanion :
 			-------
 			boolean
 				the DOM is valid or not according to the specified DTD
-
-			See Also
-			--------
-			`DOMCompanion.enrichXML`
 		"""
 		if self.doc is not None :
 			parser = etree.XMLParser(recover=True, strip_cdata=True)
@@ -178,7 +201,7 @@ class DOMCompanion :
 				if existFile(dtdFile) :
 					dtd = etree.DTD(dtdFile)
 					if dtd.validate(tree) :
-						self.enrichXML()
+						self.__enrichXML()
 						return True
 					else :
 						print(dtd.error_log.filter_from_errors()[0])
@@ -200,26 +223,46 @@ class DOMCompanion :
 			-------
 			str
 				the XML string
+
+			Notes
+			-----
+			See https://docs.python.org/3/library/xml.dom.minidom.html
 		"""
 		return self.doc.toxml()
+
+	# ===========================================================================================
+	def toprettyxml(self,indent="\t", newl="\n", encoding=None, standalone=None) :
+		"""
+			produce pretty-printed version of the XML string
+
+			Returns
+			-------
+			str
+				the XML string
+
+			Notes
+			-----
+			See https://docs.python.org/3/library/xml.dom.minidom.html
+		"""
+		return self.doc.toprettyxml(ident, newl, encoding, standalone)
 
 	# ===========================================================================================
 	#####################################
 	########## private methods ##########
 	#####################################
 
-	def enrichXML(self) :
+	def __enrichXML(self) :
 		if self.doc is not None :
 			self.lid = dict()
 			dtdFile = self.doc.doctype.systemId
 			if dtdFile is not None :
 				if existFile(dtdFile) :
-					le = self.extractDTD(dtdFile)
-					self.enrichNode(self.doc.documentElement, le)
+					le = self.__extractDTD(dtdFile)
+					self.__enrichNode(self.doc.documentElement, le)
 				else :
 					print('Unable ti find the DTD file ',dtdFile)
 
-	def purgeDOM(self, no, del_spaces, del_comments, del_pi) :
+	def __purgeDOM(self, no, del_spaces, del_comments, del_pi) :
 		if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
 			toDel = []
 			for n in no.childNodes :
@@ -230,7 +273,7 @@ class DOMCompanion :
 				elif del_pi and n.nodeType == Node.PROCESSING_INSTRUCTION_NODE :
 					toDel.append(n)
 				elif n.nodeType == Node.ELEMENT_NODE :
-					self.purgeDOM(n,del_spaces,del_comments, del_pi)
+					self.__purgeDOM(n,del_spaces,del_comments, del_pi)
 			for n in toDel :
 				no.removeChild(n)
 		elif no.nodeType == Node.DOCUMENT_TYPE_NODE :
@@ -240,7 +283,7 @@ class DOMCompanion :
 		return no
 
 
-	def getDTD(self, file) :
+	def __getDTD(self, file) :
 		if existFile(file) :
 			f = open(file,'r')
 			dtd = f.read()
@@ -250,14 +293,14 @@ class DOMCompanion :
 			return None
 
 
-	def extractDTD(self, file) :
+	def __extractDTD(self, file) :
 
 		el = re.compile(r'<!ELEMENT (?P<elementname>[\w\-\:\_]+) (?P<description>.*)\s*>')
 		att = re.compile(r'<!ATTLIST (?P<elementname>[\w\-\:\_]+) (?P<attributs>.*)\s*>')
 		att2 = re.compile(r'(?P<attname>[\w\-\:\_]+) (?P<def>.*?) (?P<status>#[\w\-\:\_]+|[\"\'].*?[\"\'])')
 		comment = re.compile(r'<!-- \.*? -->')
 
-		dtd = self.getDTD(file).replace('\n',' ').replace('\t',' ')
+		dtd = self.__getDTD(file).replace('\n',' ').replace('\t',' ')
 		cp = re.compile(r'<.*?>')
 		liste_elem = dict()
 		for item in cp.findall(dtd) :
@@ -281,7 +324,7 @@ class DOMCompanion :
 		return liste_elem
 
 
-	def enrichNode(self, node, le) :
+	def __enrichNode(self, node, le) :
 		if node.nodeType == Node.ELEMENT_NODE :
 			la = le[node.tagName]
 			for (att, (definition, status)) in la.items() :
@@ -294,7 +337,7 @@ class DOMCompanion :
 					if '#' not in status :
 						node.setAttribute(att,status) 
 			for n in node.childNodes :
-				self.enrichNode(n,le)
+				self.__enrichNode(n,le)
 
 
 if ( __name__ == "__main__"):
