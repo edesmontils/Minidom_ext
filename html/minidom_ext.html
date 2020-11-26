@@ -44,11 +44,11 @@ from lxml import etree  # http://lxml.de/index.html#documentation
 #============ Tools ===============================
 #==================================================
 
-def existFile(f):
+def _existFile(f):
         &#34;&#34;&#34; tests if the file exists &#34;&#34;&#34;
         return os.path.isfile(f)
 
-def existDir(d):
+def _existDir(d):
         &#34;&#34;&#34; tests if the directory exists &#34;&#34;&#34;
         return os.path.exists(d)
 
@@ -112,13 +112,13 @@ class DOMCompanion :
                         if a DTD is specified, uses it to add default attributes and to collect IDs
                         See https://docs.python.org/3/library/xml.dom.minidom.html
                 &#34;&#34;&#34;
-                if existFile(file) :
+                if _existFile(file) :
                         self.doc = parse(file)
                         self.documentElement = self.doc.documentElement
                         if validate :
                                 self.validate()
                         else :
-                                self.__enrichXML()
+                                self._enrichXML()
 
         # ===========================================================================================
         def parseString(self, xml, validate = False):
@@ -147,7 +147,7 @@ class DOMCompanion :
                 if validate :
                         self.validate()
                 else :
-                        self.__enrichXML()
+                        self._enrichXML()
 
         # ===========================================================================================
         def getElementsByTagName(self, name) :
@@ -209,7 +209,7 @@ class DOMCompanion :
                                 itself
                 &#34;&#34;&#34;
                 if self.doc is not None :
-                        self.__purgeDOM(self.doc, del_spaces, del_comments, del_pi)
+                        self._purgeDOM(self.doc, del_spaces, del_comments, del_pi)
                 return self
 
         # ===========================================================================================
@@ -227,10 +227,10 @@ class DOMCompanion :
                         tree = etree.XML(self.doc.toxml(), parser)
                         dtdFile = self.doc.doctype.systemId
                         if dtdFile is not None :
-                                if existFile(dtdFile) :
+                                if _existFile(dtdFile) :
                                         dtd = etree.DTD(dtdFile)
                                         if dtd.validate(tree) :
-                                                self.__enrichXML()
+                                                self._enrichXML()
                                                 return True
                                         else :
                                                 print(dtd.error_log.filter_from_errors()[0])
@@ -280,18 +280,18 @@ class DOMCompanion :
         ########## private methods ##########
         #####################################
 
-        def __enrichXML(self) :
+        def _enrichXML(self) :
                 if self.doc is not None :
                         self.lid = dict()
                         dtdFile = self.doc.doctype.systemId
                         if dtdFile is not None :
-                                if existFile(dtdFile) :
-                                        le = self.__extractDTD(dtdFile)
-                                        self.__enrichNode(self.doc.documentElement, le)
+                                if _existFile(dtdFile) :
+                                        le = self._extractDTD(dtdFile)
+                                        self._enrichNode(self.doc.documentElement, le)
                                 else :
                                         print(&#39;Unable ti find the DTD file &#39;,dtdFile)
 
-        def __purgeDOM(self, no, del_spaces, del_comments, del_pi) :
+        def _purgeDOM(self, no, del_spaces, del_comments, del_pi) :
                 if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
                         toDel = []
                         for n in no.childNodes :
@@ -302,7 +302,7 @@ class DOMCompanion :
                                 elif del_pi and n.nodeType == Node.PROCESSING_INSTRUCTION_NODE :
                                         toDel.append(n)
                                 elif n.nodeType == Node.ELEMENT_NODE :
-                                        self.__purgeDOM(n,del_spaces,del_comments, del_pi)
+                                        self._purgeDOM(n,del_spaces,del_comments, del_pi)
                         for n in toDel :
                                 no.removeChild(n)
                 elif no.nodeType == Node.DOCUMENT_TYPE_NODE :
@@ -312,8 +312,8 @@ class DOMCompanion :
                 return no
 
 
-        def __getDTD(self, file) :
-                if existFile(file) :
+        def _getDTD(self, file) :
+                if _existFile(file) :
                         f = open(file,&#39;r&#39;)
                         dtd = f.read()
                         f.close()
@@ -322,14 +322,14 @@ class DOMCompanion :
                         return None
 
 
-        def __extractDTD(self, file) :
+        def _extractDTD(self, file) :
 
                 el = re.compile(r&#39;&lt;!ELEMENT (?P&lt;elementname&gt;[\w\-\:\_]+) (?P&lt;description&gt;.*)\s*&gt;&#39;)
                 att = re.compile(r&#39;&lt;!ATTLIST (?P&lt;elementname&gt;[\w\-\:\_]+) (?P&lt;attributs&gt;.*)\s*&gt;&#39;)
                 att2 = re.compile(r&#39;(?P&lt;attname&gt;[\w\-\:\_]+) (?P&lt;def&gt;.*?) (?P&lt;status&gt;#[\w\-\:\_]+|[\&#34;\&#39;].*?[\&#34;\&#39;])&#39;)
                 comment = re.compile(r&#39;&lt;!-- \.*? --&gt;&#39;)
 
-                dtd = self.__getDTD(file).replace(&#39;\n&#39;,&#39; &#39;).replace(&#39;\t&#39;,&#39; &#39;)
+                dtd = self._getDTD(file).replace(&#39;\n&#39;,&#39; &#39;).replace(&#39;\t&#39;,&#39; &#39;)
                 cp = re.compile(r&#39;&lt;.*?&gt;&#39;)
                 liste_elem = dict()
                 for item in cp.findall(dtd) :
@@ -353,7 +353,7 @@ class DOMCompanion :
                 return liste_elem
 
 
-        def __enrichNode(self, node, le) :
+        def _enrichNode(self, node, le) :
                 if node.nodeType == Node.ELEMENT_NODE :
                         la = le[node.tagName]
                         for (att, (definition, status)) in la.items() :
@@ -366,7 +366,7 @@ class DOMCompanion :
                                         if &#39;#&#39; not in status :
                                                 node.setAttribute(att,status) 
                         for n in node.childNodes :
-                                self.__enrichNode(n,le)
+                                self._enrichNode(n,le)
 
 
 if ( __name__ == &#34;__main__&#34;):
@@ -382,37 +382,6 @@ if ( __name__ == &#34;__main__&#34;):
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="minidom_ext.existDir"><code class="name flex">
-<span>def <span class="ident">existDir</span></span>(<span>d)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>tests if the directory exists</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def existDir(d):
-        &#34;&#34;&#34; tests if the directory exists &#34;&#34;&#34;
-        return os.path.exists(d)</code></pre>
-</details>
-</dd>
-<dt id="minidom_ext.existFile"><code class="name flex">
-<span>def <span class="ident">existFile</span></span>(<span>f)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>tests if the file exists</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def existFile(f):
-        &#34;&#34;&#34; tests if the file exists &#34;&#34;&#34;
-        return os.path.isfile(f)</code></pre>
-</details>
-</dd>
-</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -498,13 +467,13 @@ if ( __name__ == &#34;__main__&#34;):
                         if a DTD is specified, uses it to add default attributes and to collect IDs
                         See https://docs.python.org/3/library/xml.dom.minidom.html
                 &#34;&#34;&#34;
-                if existFile(file) :
+                if _existFile(file) :
                         self.doc = parse(file)
                         self.documentElement = self.doc.documentElement
                         if validate :
                                 self.validate()
                         else :
-                                self.__enrichXML()
+                                self._enrichXML()
 
         # ===========================================================================================
         def parseString(self, xml, validate = False):
@@ -533,7 +502,7 @@ if ( __name__ == &#34;__main__&#34;):
                 if validate :
                         self.validate()
                 else :
-                        self.__enrichXML()
+                        self._enrichXML()
 
         # ===========================================================================================
         def getElementsByTagName(self, name) :
@@ -595,7 +564,7 @@ if ( __name__ == &#34;__main__&#34;):
                                 itself
                 &#34;&#34;&#34;
                 if self.doc is not None :
-                        self.__purgeDOM(self.doc, del_spaces, del_comments, del_pi)
+                        self._purgeDOM(self.doc, del_spaces, del_comments, del_pi)
                 return self
 
         # ===========================================================================================
@@ -613,10 +582,10 @@ if ( __name__ == &#34;__main__&#34;):
                         tree = etree.XML(self.doc.toxml(), parser)
                         dtdFile = self.doc.doctype.systemId
                         if dtdFile is not None :
-                                if existFile(dtdFile) :
+                                if _existFile(dtdFile) :
                                         dtd = etree.DTD(dtdFile)
                                         if dtd.validate(tree) :
-                                                self.__enrichXML()
+                                                self._enrichXML()
                                                 return True
                                         else :
                                                 print(dtd.error_log.filter_from_errors()[0])
@@ -666,18 +635,18 @@ if ( __name__ == &#34;__main__&#34;):
         ########## private methods ##########
         #####################################
 
-        def __enrichXML(self) :
+        def _enrichXML(self) :
                 if self.doc is not None :
                         self.lid = dict()
                         dtdFile = self.doc.doctype.systemId
                         if dtdFile is not None :
-                                if existFile(dtdFile) :
-                                        le = self.__extractDTD(dtdFile)
-                                        self.__enrichNode(self.doc.documentElement, le)
+                                if _existFile(dtdFile) :
+                                        le = self._extractDTD(dtdFile)
+                                        self._enrichNode(self.doc.documentElement, le)
                                 else :
                                         print(&#39;Unable ti find the DTD file &#39;,dtdFile)
 
-        def __purgeDOM(self, no, del_spaces, del_comments, del_pi) :
+        def _purgeDOM(self, no, del_spaces, del_comments, del_pi) :
                 if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
                         toDel = []
                         for n in no.childNodes :
@@ -688,7 +657,7 @@ if ( __name__ == &#34;__main__&#34;):
                                 elif del_pi and n.nodeType == Node.PROCESSING_INSTRUCTION_NODE :
                                         toDel.append(n)
                                 elif n.nodeType == Node.ELEMENT_NODE :
-                                        self.__purgeDOM(n,del_spaces,del_comments, del_pi)
+                                        self._purgeDOM(n,del_spaces,del_comments, del_pi)
                         for n in toDel :
                                 no.removeChild(n)
                 elif no.nodeType == Node.DOCUMENT_TYPE_NODE :
@@ -698,8 +667,8 @@ if ( __name__ == &#34;__main__&#34;):
                 return no
 
 
-        def __getDTD(self, file) :
-                if existFile(file) :
+        def _getDTD(self, file) :
+                if _existFile(file) :
                         f = open(file,&#39;r&#39;)
                         dtd = f.read()
                         f.close()
@@ -708,14 +677,14 @@ if ( __name__ == &#34;__main__&#34;):
                         return None
 
 
-        def __extractDTD(self, file) :
+        def _extractDTD(self, file) :
 
                 el = re.compile(r&#39;&lt;!ELEMENT (?P&lt;elementname&gt;[\w\-\:\_]+) (?P&lt;description&gt;.*)\s*&gt;&#39;)
                 att = re.compile(r&#39;&lt;!ATTLIST (?P&lt;elementname&gt;[\w\-\:\_]+) (?P&lt;attributs&gt;.*)\s*&gt;&#39;)
                 att2 = re.compile(r&#39;(?P&lt;attname&gt;[\w\-\:\_]+) (?P&lt;def&gt;.*?) (?P&lt;status&gt;#[\w\-\:\_]+|[\&#34;\&#39;].*?[\&#34;\&#39;])&#39;)
                 comment = re.compile(r&#39;&lt;!-- \.*? --&gt;&#39;)
 
-                dtd = self.__getDTD(file).replace(&#39;\n&#39;,&#39; &#39;).replace(&#39;\t&#39;,&#39; &#39;)
+                dtd = self._getDTD(file).replace(&#39;\n&#39;,&#39; &#39;).replace(&#39;\t&#39;,&#39; &#39;)
                 cp = re.compile(r&#39;&lt;.*?&gt;&#39;)
                 liste_elem = dict()
                 for item in cp.findall(dtd) :
@@ -739,7 +708,7 @@ if ( __name__ == &#34;__main__&#34;):
                 return liste_elem
 
 
-        def __enrichNode(self, node, le) :
+        def _enrichNode(self, node, le) :
                 if node.nodeType == Node.ELEMENT_NODE :
                         la = le[node.tagName]
                         for (att, (definition, status)) in la.items() :
@@ -752,7 +721,7 @@ if ( __name__ == &#34;__main__&#34;):
                                         if &#39;#&#39; not in status :
                                                 node.setAttribute(att,status) 
                         for n in node.childNodes :
-                                self.__enrichNode(n,le)</code></pre>
+                                self._enrichNode(n,le)</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -876,13 +845,13 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
                 if a DTD is specified, uses it to add default attributes and to collect IDs
                 See https://docs.python.org/3/library/xml.dom.minidom.html
         &#34;&#34;&#34;
-        if existFile(file) :
+        if _existFile(file) :
                 self.doc = parse(file)
                 self.documentElement = self.doc.documentElement
                 if validate :
                         self.validate()
                 else :
-                        self.__enrichXML()</code></pre>
+                        self._enrichXML()</code></pre>
 </details>
 </dd>
 <dt id="minidom_ext.DOMCompanion.parseString"><code class="name flex">
@@ -932,7 +901,7 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
         if validate :
                 self.validate()
         else :
-                self.__enrichXML()</code></pre>
+                self._enrichXML()</code></pre>
 </details>
 </dd>
 <dt id="minidom_ext.DOMCompanion.toLighter"><code class="name flex">
@@ -977,7 +946,7 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
                         itself
         &#34;&#34;&#34;
         if self.doc is not None :
-                self.__purgeDOM(self.doc, del_spaces, del_comments, del_pi)
+                self._purgeDOM(self.doc, del_spaces, del_comments, del_pi)
         return self</code></pre>
 </details>
 </dd>
@@ -1073,10 +1042,10 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
                 tree = etree.XML(self.doc.toxml(), parser)
                 dtdFile = self.doc.doctype.systemId
                 if dtdFile is not None :
-                        if existFile(dtdFile) :
+                        if _existFile(dtdFile) :
                                 dtd = etree.DTD(dtdFile)
                                 if dtd.validate(tree) :
-                                        self.__enrichXML()
+                                        self._enrichXML()
                                         return True
                                 else :
                                         print(dtd.error_log.filter_from_errors()[0])
@@ -1101,12 +1070,6 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
 <ul></ul>
 </div>
 <ul id="index">
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="minidom_ext.existDir" href="#minidom_ext.existDir">existDir</a></code></li>
-<li><code><a title="minidom_ext.existFile" href="#minidom_ext.existFile">existFile</a></code></li>
-</ul>
-</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>

@@ -15,11 +15,11 @@ from lxml import etree  # http://lxml.de/index.html#documentation
 #============ Tools ===============================
 #==================================================
 
-def existFile(f):
+def _existFile(f):
 	""" tests if the file exists """
 	return os.path.isfile(f)
 
-def existDir(d):
+def _existDir(d):
 	""" tests if the directory exists """
 	return os.path.exists(d)
 
@@ -83,13 +83,13 @@ class DOMCompanion :
 			if a DTD is specified, uses it to add default attributes and to collect IDs
 			See https://docs.python.org/3/library/xml.dom.minidom.html
 		"""
-		if existFile(file) :
+		if _existFile(file) :
 			self.doc = parse(file)
 			self.documentElement = self.doc.documentElement
 			if validate :
 				self.validate()
 			else :
-				self.__enrichXML()
+				self._enrichXML()
 
 	# ===========================================================================================
 	def parseString(self, xml, validate = False):
@@ -118,7 +118,7 @@ class DOMCompanion :
 		if validate :
 			self.validate()
 		else :
-			self.__enrichXML()
+			self._enrichXML()
 
 	# ===========================================================================================
 	def getElementsByTagName(self, name) :
@@ -180,7 +180,7 @@ class DOMCompanion :
 				itself
 		"""
 		if self.doc is not None :
-			self.__purgeDOM(self.doc, del_spaces, del_comments, del_pi)
+			self._purgeDOM(self.doc, del_spaces, del_comments, del_pi)
 		return self
 
 	# ===========================================================================================
@@ -198,10 +198,10 @@ class DOMCompanion :
 			tree = etree.XML(self.doc.toxml(), parser)
 			dtdFile = self.doc.doctype.systemId
 			if dtdFile is not None :
-				if existFile(dtdFile) :
+				if _existFile(dtdFile) :
 					dtd = etree.DTD(dtdFile)
 					if dtd.validate(tree) :
-						self.__enrichXML()
+						self._enrichXML()
 						return True
 					else :
 						print(dtd.error_log.filter_from_errors()[0])
@@ -251,18 +251,18 @@ class DOMCompanion :
 	########## private methods ##########
 	#####################################
 
-	def __enrichXML(self) :
+	def _enrichXML(self) :
 		if self.doc is not None :
 			self.lid = dict()
 			dtdFile = self.doc.doctype.systemId
 			if dtdFile is not None :
-				if existFile(dtdFile) :
-					le = self.__extractDTD(dtdFile)
-					self.__enrichNode(self.doc.documentElement, le)
+				if _existFile(dtdFile) :
+					le = self._extractDTD(dtdFile)
+					self._enrichNode(self.doc.documentElement, le)
 				else :
 					print('Unable ti find the DTD file ',dtdFile)
 
-	def __purgeDOM(self, no, del_spaces, del_comments, del_pi) :
+	def _purgeDOM(self, no, del_spaces, del_comments, del_pi) :
 		if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
 			toDel = []
 			for n in no.childNodes :
@@ -273,7 +273,7 @@ class DOMCompanion :
 				elif del_pi and n.nodeType == Node.PROCESSING_INSTRUCTION_NODE :
 					toDel.append(n)
 				elif n.nodeType == Node.ELEMENT_NODE :
-					self.__purgeDOM(n,del_spaces,del_comments, del_pi)
+					self._purgeDOM(n,del_spaces,del_comments, del_pi)
 			for n in toDel :
 				no.removeChild(n)
 		elif no.nodeType == Node.DOCUMENT_TYPE_NODE :
@@ -283,8 +283,8 @@ class DOMCompanion :
 		return no
 
 
-	def __getDTD(self, file) :
-		if existFile(file) :
+	def _getDTD(self, file) :
+		if _existFile(file) :
 			f = open(file,'r')
 			dtd = f.read()
 			f.close()
@@ -293,14 +293,14 @@ class DOMCompanion :
 			return None
 
 
-	def __extractDTD(self, file) :
+	def _extractDTD(self, file) :
 
 		el = re.compile(r'<!ELEMENT (?P<elementname>[\w\-\:\_]+) (?P<description>.*)\s*>')
 		att = re.compile(r'<!ATTLIST (?P<elementname>[\w\-\:\_]+) (?P<attributs>.*)\s*>')
 		att2 = re.compile(r'(?P<attname>[\w\-\:\_]+) (?P<def>.*?) (?P<status>#[\w\-\:\_]+|[\"\'].*?[\"\'])')
 		comment = re.compile(r'<!-- \.*? -->')
 
-		dtd = self.__getDTD(file).replace('\n',' ').replace('\t',' ')
+		dtd = self._getDTD(file).replace('\n',' ').replace('\t',' ')
 		cp = re.compile(r'<.*?>')
 		liste_elem = dict()
 		for item in cp.findall(dtd) :
@@ -324,7 +324,7 @@ class DOMCompanion :
 		return liste_elem
 
 
-	def __enrichNode(self, node, le) :
+	def _enrichNode(self, node, le) :
 		if node.nodeType == Node.ELEMENT_NODE :
 			la = le[node.tagName]
 			for (att, (definition, status)) in la.items() :
@@ -337,7 +337,7 @@ class DOMCompanion :
 					if '#' not in status :
 						node.setAttribute(att,status) 
 			for n in node.childNodes :
-				self.__enrichNode(n,le)
+				self._enrichNode(n,le)
 
 
 if ( __name__ == "__main__"):
