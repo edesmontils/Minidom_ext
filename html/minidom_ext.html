@@ -59,13 +59,6 @@ def _existDir(d):
 class DOMCompanion :
         &#34;&#34;&#34;
                 Functions to improve xml.dom.minidom tools in Python.
-
-                Attributes
-                ----------
-                doc : Node.DOCUMENT_NODE
-                        the DOM structure
-                documentElement : Node.ElEMENT_NODE
-                        equivalent to doc.documentElement
         &#34;&#34;&#34;
 
         # ===========================================================================================
@@ -83,12 +76,18 @@ class DOMCompanion :
                         The DOM is also enriched with default attributes if a DTD is specified
                 &#34;&#34;&#34;
                 self.doc = doc
+                &#34;&#34;&#34;
+                        the DOM structure : Node.DOCUMENT_NODE
+                &#34;&#34;&#34;
+                self.documentElement = None
+                &#34;&#34;&#34;
+                        equivalent to doc.documentElement : Node.ELEMENT_NODE
+                &#34;&#34;&#34;
                 self.lid = dict()
                 if doc is not None :
                         self.documentElement = doc.documentElement
                         self.enrichXML()
-                else :
-                        self.documentElement = None
+                        
 
         # ===========================================================================================
         def parse(self, file, validate = False):
@@ -392,13 +391,6 @@ if ( __name__ == &#34;__main__&#34;):
 </code></dt>
 <dd>
 <div class="desc"><p>Functions to improve xml.dom.minidom tools in Python.</p>
-<h2 id="attributes">Attributes</h2>
-<dl>
-<dt><strong><code>doc</code></strong> :&ensp;<code>Node.DOCUMENT_NODE</code></dt>
-<dd>the DOM structure</dd>
-<dt><strong><code>documentElement</code></strong> :&ensp;<code>Node.ElEMENT_NODE</code></dt>
-<dd>equivalent to doc.documentElement</dd>
-</dl>
 <p>class constructor.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
@@ -414,13 +406,6 @@ if ( __name__ == &#34;__main__&#34;):
 <pre><code class="python">class DOMCompanion :
         &#34;&#34;&#34;
                 Functions to improve xml.dom.minidom tools in Python.
-
-                Attributes
-                ----------
-                doc : Node.DOCUMENT_NODE
-                        the DOM structure
-                documentElement : Node.ElEMENT_NODE
-                        equivalent to doc.documentElement
         &#34;&#34;&#34;
 
         # ===========================================================================================
@@ -438,12 +423,18 @@ if ( __name__ == &#34;__main__&#34;):
                         The DOM is also enriched with default attributes if a DTD is specified
                 &#34;&#34;&#34;
                 self.doc = doc
+                &#34;&#34;&#34;
+                        the DOM structure : Node.DOCUMENT_NODE
+                &#34;&#34;&#34;
+                self.documentElement = None
+                &#34;&#34;&#34;
+                        equivalent to doc.documentElement : Node.ELEMENT_NODE
+                &#34;&#34;&#34;
                 self.lid = dict()
                 if doc is not None :
                         self.documentElement = doc.documentElement
                         self.enrichXML()
-                else :
-                        self.documentElement = None
+                        
 
         # ===========================================================================================
         def parse(self, file, validate = False):
@@ -723,6 +714,17 @@ if ( __name__ == &#34;__main__&#34;):
                         for n in node.childNodes :
                                 self._enrichNode(n,le)</code></pre>
 </details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="minidom_ext.DOMCompanion.doc"><code class="name">var <span class="ident">doc</span></code></dt>
+<dd>
+<div class="desc"><p>the DOM structure : Node.DOCUMENT_NODE</p></div>
+</dd>
+<dt id="minidom_ext.DOMCompanion.documentElement"><code class="name">var <span class="ident">documentElement</span></code></dt>
+<dd>
+<div class="desc"><p>equivalent to doc.documentElement : Node.ELEMENT_NODE</p></div>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="minidom_ext.DOMCompanion.getElementById"><code class="name flex">
@@ -1075,6 +1077,8 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
 <li>
 <h4><code><a title="minidom_ext.DOMCompanion" href="#minidom_ext.DOMCompanion">DOMCompanion</a></code></h4>
 <ul class="">
+<li><code><a title="minidom_ext.DOMCompanion.doc" href="#minidom_ext.DOMCompanion.doc">doc</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.documentElement" href="#minidom_ext.DOMCompanion.documentElement">documentElement</a></code></li>
 <li><code><a title="minidom_ext.DOMCompanion.getElementById" href="#minidom_ext.DOMCompanion.getElementById">getElementById</a></code></li>
 <li><code><a title="minidom_ext.DOMCompanion.getElementsByTagName" href="#minidom_ext.DOMCompanion.getElementsByTagName">getElementsByTagName</a></code></li>
 <li><code><a title="minidom_ext.DOMCompanion.parse" href="#minidom_ext.DOMCompanion.parse">parse</a></code></li>

@@ -30,13 +30,6 @@ def _existDir(d):
 class DOMCompanion :
 	"""
 		Functions to improve xml.dom.minidom tools in Python.
-
-		Attributes
-		----------
-		doc : Node.DOCUMENT_NODE
-			the DOM structure
-		documentElement : Node.ElEMENT_NODE
-			equivalent to doc.documentElement
 	"""
 
 	# ===========================================================================================
@@ -54,12 +47,18 @@ class DOMCompanion :
 			The DOM is also enriched with default attributes if a DTD is specified
 		"""
 		self.doc = doc
+		"""
+			the DOM structure : Node.DOCUMENT_NODE
+		"""
+		self.documentElement = None
+		"""
+			equivalent to doc.documentElement : Node.ELEMENT_NODE
+		"""
 		self.lid = dict()
 		if doc is not None :
 			self.documentElement = doc.documentElement
 			self.enrichXML()
-		else :
-			self.documentElement = None
+			
 
 	# ===========================================================================================
 	def parse(self, file, validate = False):
