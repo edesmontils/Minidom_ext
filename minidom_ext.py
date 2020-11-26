@@ -23,14 +23,6 @@ class DOMCompanion :
 		else :
 			self.enrichXML()
 
-	def enrichXML(self) :
-		if self.doc is not None :
-			self.lid = dict()
-			dtdFile = self.doc.doctype.systemId
-			if dtdFile is not None :
-				le = self.extractDTD(dtdFile)
-				self.enrichNode(self.doc.documentElement, le)
-
 	def getElementsByTagName(self, name) :
 		if self.doc is not None :
 			return self.doc.getElementsByTagName(name)
@@ -67,9 +59,24 @@ class DOMCompanion :
 		else :
 			return False
 
+
+
+
+
+
+
 	#####################################
 	########## private methods ##########
 	#####################################
+
+	def enrichXML(self) :
+		if self.doc is not None :
+			self.lid = dict()
+			dtdFile = self.doc.doctype.systemId
+			if dtdFile is not None :
+				le = self.extractDTD(dtdFile)
+				self.enrichNode(self.doc.documentElement, le)
+
 
 	def purgeDOM(self, no, del_spaces, del_comments, del_pi) :
 		if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
@@ -91,11 +98,13 @@ class DOMCompanion :
 			pass
 		return no
 
+
 	def getDTD(self, file) :
 		f = open(file,'r')
 		dtd = f.read()
 		f.close()
 		return dtd
+
 
 	def extractDTD(self, file) :
 
@@ -126,6 +135,7 @@ class DOMCompanion :
 							status = status.strip('\t \n')
 							liste_elem[nomElem][nomAtt] = (definition, status.replace("'",'').replace('"',''))
 		return liste_elem
+
 
 	def enrichNode(self, node, le) :
 		if node.nodeType == Node.ELEMENT_NODE :
