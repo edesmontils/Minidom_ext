@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 
 from xml.dom.minidom import Node, Element, parse
@@ -10,24 +10,32 @@ class DOMCompanion :
 		self.doc = doc
 		self.lid = dict()
 		if doc is not None :
+			self.documentElement = doc.documentElement
 			self.enrichXML()
+		else :
+			self.documentElement = None
 
 	def parse(self, file, validate = False):
 		self.doc = parse(file)
+		self.documentElement = self.doc.documentElement
 		if validate :
 			self.validate()
 		else :
 			self.enrichXML()
 
 	def enrichXML(self) :
-		self.lid = dict()
-		dtdFile = self.doc.doctype.systemId
-		if dtdFile is not None :
-			le = self.extractDTD(dtdFile)
-			self.enrichNode(self.doc.documentElement, le)
+		if self.doc is not None :
+			self.lid = dict()
+			dtdFile = self.doc.doctype.systemId
+			if dtdFile is not None :
+				le = self.extractDTD(dtdFile)
+				self.enrichNode(self.doc.documentElement, le)
 
 	def getElementsByTagName(self, name) :
-		return self.doc.getElementsByTagName(name)
+		if self.doc is not None :
+			return self.doc.getElementsByTagName(name)
+		else:
+			return None
 
 	def getElementById(self, id) :
 		if id in self.lid.keys() :
@@ -36,22 +44,28 @@ class DOMCompanion :
 			return None
 
 	def toLighter(self, del_spaces = True, del_comments = True, del_pi = True) :
-		return self.purgeDOM(self.doc, del_spaces, del_comments, del_pi)
+		if self.doc is not None :
+			return self.purgeDOM(self.doc, del_spaces, del_comments, del_pi)
+		else:
+			return None
 
 	def validate(self) :
-		parser = etree.XMLParser(recover=True, strip_cdata=True)
-		tree = etree.XML(self.doc.toxml(), parser)
-		dtdFile = self.doc.doctype.systemId
-		if dtdFile is not None :
-			dtd = etree.DTD(dtdFile)
-			if dtd.validate(tree) :
-				self.enrichXML()
+		if self.doc is not None :
+			parser = etree.XMLParser(recover=True, strip_cdata=True)
+			tree = etree.XML(self.doc.toxml(), parser)
+			dtdFile = self.doc.doctype.systemId
+			if dtdFile is not None :
+				dtd = etree.DTD(dtdFile)
+				if dtd.validate(tree) :
+					self.enrichXML()
+					return True
+				else :
+					print(dtd.error_log.filter_from_errors()[0])
+					return False
+			else:
 				return True
-			else :
-				print(dtd.error_log.filter_from_errors()[0])
-				return False
-		else:
-			return True
+		else :
+			return False
 
 	#####################################
 	########## private methods ##########
