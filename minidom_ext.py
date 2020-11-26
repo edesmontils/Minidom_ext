@@ -1,12 +1,56 @@
 #!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 
+"""
+	Functions to improve xml.dom.minidom tools in Python.
+"""
+import os
 from xml.dom.minidom import Node, Element, parse
 import re
 from lxml import etree  # http://lxml.de/index.html#documentation
 
+#==================================================
+#============ Tools ===============================
+#==================================================
+
+def existFile(f):
+	""" tests if the file exists """
+	return os.path.isfile(f)
+
+def existDir(d):
+	""" tests if the directory exists """
+	return os.path.exists(d)
+
+#==================================================
+#============ class DOMCompanion ==================
+#==================================================
+
 class DOMCompanion :
+	"""
+		Functions to improve xml.dom.minidom tools in Python.
+
+		Attributes
+		----------
+		doc : Node.DOCUMENT_NODE
+			the DOM structure
+		documentElement : Node.ElEMENT_NODE
+			equivalent to doc.documentElement
+	"""
+
+	# ===========================================================================================
 	def __init__(self, doc = None) :
+		"""
+			class constructor.
+
+			Parameters
+			----------
+			doc : Node.DOCUMENT_NODE, optional
+				DOM structure
+
+			Notes
+			-----
+			The DOM is also enriched with default attributes if a DTD is specified
+		"""
 		self.doc = doc
 		self.lid = dict()
 		if doc is not None :
@@ -15,56 +59,151 @@ class DOMCompanion :
 		else :
 			self.documentElement = None
 
+	# ===========================================================================================
 	def parse(self, file, validate = False):
-		self.doc = parse(file)
-		self.documentElement = self.doc.documentElement
-		if validate :
-			self.validate()
-		else :
-			self.enrichXML()
+		""" 
+			to load an XML file
 
+			Parameters
+			----------
+			file : str
+				file that contains the XML file to load
+
+			validate : boolean, optional
+				flag to validate the XML file if it contains a Doctype section
+
+			See Also
+			--------
+			`DOMCompanion.validate`
+			`DOMCompanion.enrichXML`
+
+			Notes
+			-----
+			if a DTD is specified, uses it to add default attributes and to collect IDs
+		"""
+		if existFile(file) :
+			self.doc = parse(file)
+			self.documentElement = self.doc.documentElement
+			if validate :
+				self.validate()
+			else :
+				self.enrichXML()
+
+	# ===========================================================================================
 	def getElementsByTagName(self, name) :
+		"""
+			the DOM getElementsByTagName
+
+			Parameters
+			----------
+			name : str
+				the Element to find in the DOM
+
+			Returns
+			-------
+			NodeList or None
+				a list of elements or None
+		"""
 		if self.doc is not None :
 			return self.doc.getElementsByTagName(name)
 		else:
 			return None
 
+	# ===========================================================================================
 	def getElementById(self, id) :
+		"""
+			to retrieve an element by its ID
+			
+			Parameters
+			----------
+			id : str
+				the ID of the element to find
+
+			Returns
+			-------
+			Node.ELEMENT_NODE or None
+				the element or None
+		"""
 		if id in self.lid.keys() :
 			return self.lid[id]
 		else :
 			return None
 
+	# ===========================================================================================
 	def toLighter(self, del_spaces = True, del_comments = True, del_pi = True) :
-		if self.doc is not None :
-			return self.purgeDOM(self.doc, del_spaces, del_comments, del_pi)
-		else:
-			return None
+		"""
+			to suppress text nodes (with only separators), processing instructions and/or comments
 
+			Parameters
+			----------
+			del_spaces : boolean, optional
+				to suppress blank nodes (with only newline, tabulation et space caracters)
+			del_comments : boolean, optional
+				to suppress comment nodes
+			del_spaces : boolean, optional
+				to suppress processing instruction nodes
+
+			Returns
+			-------
+			DOMCompaniom
+				itself
+
+			See Also
+			--------
+			`DOMCompanion.purgeDOM`
+		"""
+		if self.doc is not None :
+			self.purgeDOM(self.doc, del_spaces, del_comments, del_pi)
+		return self
+
+	# ===========================================================================================
 	def validate(self) :
+		"""
+			to validate the XML according its DTD (enrich it too). It uses lxml module to validate the XML document.
+
+			Returns
+			-------
+			boolean
+				the DOM is valid or not according to the specified DTD
+
+			See Also
+			--------
+			`DOMCompanion.enrichXML`
+		"""
 		if self.doc is not None :
 			parser = etree.XMLParser(recover=True, strip_cdata=True)
 			tree = etree.XML(self.doc.toxml(), parser)
 			dtdFile = self.doc.doctype.systemId
 			if dtdFile is not None :
-				dtd = etree.DTD(dtdFile)
-				if dtd.validate(tree) :
-					self.enrichXML()
-					return True
+				if existFile(dtdFile) :
+					dtd = etree.DTD(dtdFile)
+					if dtd.validate(tree) :
+						self.enrichXML()
+						return True
+					else :
+						print(dtd.error_log.filter_from_errors()[0])
+						return False
 				else :
-					print(dtd.error_log.filter_from_errors()[0])
+					print('Unable ti find the DTD file ',dtdFile)
 					return False
 			else:
 				return True
 		else :
 			return False
 
+	# ===========================================================================================
+	def toxml(self) :
+		"""
+			produce XML string
 
+			Returns
+			-------
+			str
+				the XML string
+		"""
+		return self.doc.toxml()
 
-
-
-
-
+	# ===========================================================================================
 	#####################################
 	########## private methods ##########
 	#####################################
@@ -74,9 +213,11 @@ class DOMCompanion :
 			self.lid = dict()
 			dtdFile = self.doc.doctype.systemId
 			if dtdFile is not None :
-				le = self.extractDTD(dtdFile)
-				self.enrichNode(self.doc.documentElement, le)
-
+				if existFile(dtdFile) :
+					le = self.extractDTD(dtdFile)
+					self.enrichNode(self.doc.documentElement, le)
+				else :
+					print('Unable ti find the DTD file ',dtdFile)
 
 	def purgeDOM(self, no, del_spaces, del_comments, del_pi) :
 		if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
@@ -100,10 +241,13 @@ class DOMCompanion :
 
 
 	def getDTD(self, file) :
-		f = open(file,'r')
-		dtd = f.read()
-		f.close()
-		return dtd
+		if existFile(file) :
+			f = open(file,'r')
+			dtd = f.read()
+			f.close()
+			return dtd
+		else :
+			return None
 
 
 	def extractDTD(self, file) :

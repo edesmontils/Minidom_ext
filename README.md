@@ -8,7 +8,7 @@ class DOMCompanion :
 -	def __init__(self, doc = None) : to build a DOM DocumentCompanion
 -	def parse(self, file, validate = False): to load an XML file
 -	def getElementsByTagName(self, name) : DOM getElementsByTagName
--	def getElementById(self, id) : to retrieve an element by its ID (only if "enrichXML" or "validate" is done)
+-	def getElementById(self, id) : to retrieve an element by its ID
 -	def toLighter(self, del_spaces = True, del_comments = True, del_pi = True) : to suppress text nodes (with only separators), processing instructions and/or comments
 -	def validate(self) : to validate the XML according its DTD (enrich it too)
 
