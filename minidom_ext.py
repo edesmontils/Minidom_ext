@@ -325,16 +325,17 @@ class DOMCompanion :
 
 	def _enrichNode(self, node, le) :
 		if node.nodeType == Node.ELEMENT_NODE :
-			la = le[node.tagName]
-			for (att, (definition, status)) in la.items() :
-				if definition == 'ID' :
-					nid = node.getAttribute(att)
-					self.lid[nid] = node
-				if node.hasAttribute(att) :
-					pass
-				else :
-					if '#' not in status :
-						node.setAttribute(att,status) 
+			if node.tagName in le :
+				la = le[node.tagName]
+				for (att, (definition, status)) in la.items() :
+					if definition == 'ID' :
+						nid = node.getAttribute(att)
+						self.lid[nid] = node
+					if node.hasAttribute(att) :
+						pass
+					else :
+						if '#' not in status :
+							node.setAttribute(att,status) 
 			for n in node.childNodes :
 				self._enrichNode(n,le)
 
