@@ -119,7 +119,7 @@ class DOMCompanion :
 			boolean
 				the DOM is valid or not according to the specified DTD
 				True if there is no DTD
-				
+
 			See Also
 			--------
 			`DOMCompanion.validate`
@@ -205,6 +205,14 @@ class DOMCompanion :
 		return self
 
 	# ===========================================================================================
+
+	def getDTDFile(self, doc) :
+		if self.doc.doctype is not None :
+			if self.doc.doctype.systemId is not None :
+				return self.doc.doctype.systemId
+			else : return None
+		else : return None
+
 	def validate(self) :
 		"""
 			to validate the XML according its DTD (enrich it too). It uses lxml module to validate the XML document.
@@ -217,7 +225,7 @@ class DOMCompanion :
 		if self.doc is not None :
 			parser = etree.XMLParser(recover=True, strip_cdata=True)
 			tree = etree.XML(self.doc.toxml(), parser)
-			dtdFile = self.doc.doctype.systemId
+			dtdFile = self.getDTDFile(self.doc)
 			if dtdFile is not None :
 				if _existFile(dtdFile) :
 					dtd = etree.DTD(dtdFile)
@@ -276,7 +284,7 @@ class DOMCompanion :
 	def _enrichXML(self) :
 		if self.doc is not None :
 			self.lid = dict()
-			dtdFile = self.doc.doctype.systemId
+			dtdFile = self.getDTDFile(self.doc)
 			if dtdFile is not None :
 				if _existFile(dtdFile) :
 					le = self._extractDTD(dtdFile)
@@ -284,7 +292,7 @@ class DOMCompanion :
 				else :
 					print('Unable ti find the DTD file ',dtdFile)
 			else :
-				pass
+				self._enrichNode(self.doc.documentElement, dict())
 
 	def _purgeDOM(self, no, del_spaces, del_comments, del_pi) :
 		if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
@@ -360,7 +368,12 @@ class DOMCompanion :
 						pass
 					else :
 						if '#' not in status :
-							node.setAttribute(att,status) 
+							node.setAttribute(att,status)
+			latt = node.attributes
+			for i in range(latt.length) :
+				att = latt.item(i)
+				if att.name.upper() == 'XML:ID' and att.value not in self.lid :
+					self.lid[att.value] = node
 			for n in node.childNodes :
 				self._enrichNode(n,le)
 
