@@ -73,6 +73,12 @@ class DOMCompanion :
 			validate : boolean, optional
 				flag to validate the XML file if it contains a Doctype section
 
+			Returns
+			-------
+			boolean
+				the DOM is valid or not according to the specified DTD
+				True if there is no DTD
+
 			See Also
 			--------
 			`DOMCompanion.validate`
@@ -86,9 +92,14 @@ class DOMCompanion :
 			self.doc = parse(file)
 			self.documentElement = self.doc.documentElement
 			if validate :
-				self.validate()
+				if self.validate() :
+					return True
+				else :
+					self._enrichXML()
+					return False
 			else :
 				self._enrichXML()
+				return True
 
 	# ===========================================================================================
 	def parseString(self, xml, validate = False):
@@ -103,6 +114,12 @@ class DOMCompanion :
 			validate : boolean, optional
 				flag to validate the XML file if it contains a Doctype section
 
+			Returns
+			-------
+			boolean
+				the DOM is valid or not according to the specified DTD
+				True if there is no DTD
+				
 			See Also
 			--------
 			`DOMCompanion.validate`
@@ -115,9 +132,14 @@ class DOMCompanion :
 		self.doc = parseString(xml)
 		self.documentElement = self.doc.documentElement
 		if validate :
-			self.validate()
+			if self.validate() :
+				return True
+			else :
+				self._enrichXML()
+				return False
 		else :
 			self._enrichXML()
+			return True
 
 	# ===========================================================================================
 	def getElementsByTagName(self, name) :
@@ -206,9 +228,10 @@ class DOMCompanion :
 						print(dtd.error_log.filter_from_errors()[0])
 						return False
 				else :
-					print('Unable ti find the DTD file ',dtdFile)
+					print('Unable to find the DTD file ',dtdFile)
 					return False
 			else:
+				self._enrichXML()
 				return True
 		else :
 			return False
@@ -260,6 +283,8 @@ class DOMCompanion :
 					self._enrichNode(self.doc.documentElement, le)
 				else :
 					print('Unable ti find the DTD file ',dtdFile)
+			else :
+				pass
 
 	def _purgeDOM(self, no, del_spaces, del_comments, del_pi) :
 		if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :

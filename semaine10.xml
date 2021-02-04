@@ -8,12 +8,12 @@
         <date_fin>14 mars 2006</date_fin>
     </periode>
     <!-- Les salles -->
-    <salle code="Ka">
+    <salle xml:id="Ka">
         <nom>Katorza</nom>
         <tel tarif="surtaxé">0 892 680 666</tel>
         <adresse>3 rue Corneille Nantes</adresse>
     </salle>
-    <salle code="Co">
+    <salle xml:id="Co">
         <nom>Concorde</nom>
         <tel tarif="local">02 40 46 25 29</tel>
         <adresse>79 boulevard de l'égalité Nantes</adresse>

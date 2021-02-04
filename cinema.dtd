@@ -12,7 +12,7 @@
    Par exemple, le 9 février 2011 s'écrit 2011-02-09 .
    --> 
 <!ELEMENT salle (nom, tel, adresse)>
-<!ATTLIST salle code ID #REQUIRED >
+<!ATTLIST salle xml:id ID #REQUIRED >
 <!ELEMENT nom (#PCDATA)>
 <!ELEMENT tel (#PCDATA)>
      <!-- "tel" suit le modèle 0 999 999 999 ou le modèle 09 99 99 99 99 --> 
