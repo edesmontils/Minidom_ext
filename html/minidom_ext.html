@@ -102,6 +102,12 @@ class DOMCompanion :
                         validate : boolean, optional
                                 flag to validate the XML file if it contains a Doctype section
 
+                        Returns
+                        -------
+                        boolean
+                                the DOM is valid or not according to the specified DTD
+                                True if there is no DTD
+
                         See Also
                         --------
                         `DOMCompanion.validate`
@@ -115,9 +121,14 @@ class DOMCompanion :
                         self.doc = parse(file)
                         self.documentElement = self.doc.documentElement
                         if validate :
-                                self.validate()
+                                if self.validate() :
+                                        return True
+                                else :
+                                        self._enrichXML()
+                                        return False
                         else :
                                 self._enrichXML()
+                                return True
 
         # ===========================================================================================
         def parseString(self, xml, validate = False):
@@ -132,6 +143,12 @@ class DOMCompanion :
                         validate : boolean, optional
                                 flag to validate the XML file if it contains a Doctype section
 
+                        Returns
+                        -------
+                        boolean
+                                the DOM is valid or not according to the specified DTD
+                                True if there is no DTD
+
                         See Also
                         --------
                         `DOMCompanion.validate`
@@ -144,9 +161,14 @@ class DOMCompanion :
                 self.doc = parseString(xml)
                 self.documentElement = self.doc.documentElement
                 if validate :
-                        self.validate()
+                        if self.validate() :
+                                return True
+                        else :
+                                self._enrichXML()
+                                return False
                 else :
                         self._enrichXML()
+                        return True
 
         # ===========================================================================================
         def getElementsByTagName(self, name) :
@@ -189,6 +211,28 @@ class DOMCompanion :
                         return None
 
         # ===========================================================================================
+        def getAttributsByIdref(self, id) :
+                &#34;&#34;&#34;
+                        to retrieve an IDREF attributs with an ID
+                        
+                        Parameters
+                        ----------
+                        id : str
+                                the ID to looking for
+
+                        Returns
+                        -------
+                        List(Attr)
+                                the attributs
+                &#34;&#34;&#34;
+                if id in self.lid.keys() :
+                        return self.lid[id]
+                else :
+                        return None
+
+
+
+        # ===========================================================================================
         def toLighter(self, del_spaces = True, del_comments = True, del_pi = True) :
                 &#34;&#34;&#34;
                         to suppress text nodes (with only separators), processing instructions and/or comments
@@ -212,6 +256,14 @@ class DOMCompanion :
                 return self
 
         # ===========================================================================================
+
+        def getDTDFile(self, doc) :
+                if self.doc.doctype is not None :
+                        if self.doc.doctype.systemId is not None :
+                                return self.doc.doctype.systemId
+                        else : return None
+                else : return None
+
         def validate(self) :
                 &#34;&#34;&#34;
                         to validate the XML according its DTD (enrich it too). It uses lxml module to validate the XML document.
@@ -224,7 +276,7 @@ class DOMCompanion :
                 if self.doc is not None :
                         parser = etree.XMLParser(recover=True, strip_cdata=True)
                         tree = etree.XML(self.doc.toxml(), parser)
-                        dtdFile = self.doc.doctype.systemId
+                        dtdFile = self.getDTDFile(self.doc)
                         if dtdFile is not None :
                                 if _existFile(dtdFile) :
                                         dtd = etree.DTD(dtdFile)
@@ -235,9 +287,10 @@ class DOMCompanion :
                                                 print(dtd.error_log.filter_from_errors()[0])
                                                 return False
                                 else :
-                                        print(&#39;Unable ti find the DTD file &#39;,dtdFile)
+                                        print(&#39;Unable to find the DTD file &#39;,dtdFile)
                                         return False
                         else:
+                                self._enrichXML()
                                 return True
                 else :
                         return False
@@ -282,13 +335,15 @@ class DOMCompanion :
         def _enrichXML(self) :
                 if self.doc is not None :
                         self.lid = dict()
-                        dtdFile = self.doc.doctype.systemId
+                        dtdFile = self.getDTDFile(self.doc)
                         if dtdFile is not None :
                                 if _existFile(dtdFile) :
                                         le = self._extractDTD(dtdFile)
                                         self._enrichNode(self.doc.documentElement, le)
                                 else :
                                         print(&#39;Unable ti find the DTD file &#39;,dtdFile)
+                        else :
+                                self._enrichNode(self.doc.documentElement, dict())
 
         def _purgeDOM(self, no, del_spaces, del_comments, del_pi) :
                 if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
@@ -354,16 +409,22 @@ class DOMCompanion :
 
         def _enrichNode(self, node, le) :
                 if node.nodeType == Node.ELEMENT_NODE :
-                        la = le[node.tagName]
-                        for (att, (definition, status)) in la.items() :
-                                if definition == &#39;ID&#39; :
-                                        nid = node.getAttribute(att)
-                                        self.lid[nid] = node
-                                if node.hasAttribute(att) :
-                                        pass
-                                else :
-                                        if &#39;#&#39; not in status :
-                                                node.setAttribute(att,status) 
+                        if node.tagName in le :
+                                la = le[node.tagName]
+                                for (att, (definition, status)) in la.items() :
+                                        if definition == &#39;ID&#39; :
+                                                nid = node.getAttribute(att)
+                                                self.lid[nid] = node
+                                        if node.hasAttribute(att) :
+                                                pass
+                                        else :
+                                                if &#39;#&#39; not in status :
+                                                        node.setAttribute(att,status)
+                        latt = node.attributes
+                        for i in range(latt.length) :
+                                att = latt.item(i)
+                                if att.name.upper() == &#39;XML:ID&#39; and att.value not in self.lid :
+                                        self.lid[att.value] = node
                         for n in node.childNodes :
                                 self._enrichNode(n,le)
 
@@ -449,6 +510,12 @@ if ( __name__ == &#34;__main__&#34;):
                         validate : boolean, optional
                                 flag to validate the XML file if it contains a Doctype section
 
+                        Returns
+                        -------
+                        boolean
+                                the DOM is valid or not according to the specified DTD
+                                True if there is no DTD
+
                         See Also
                         --------
                         `DOMCompanion.validate`
@@ -462,9 +529,14 @@ if ( __name__ == &#34;__main__&#34;):
                         self.doc = parse(file)
                         self.documentElement = self.doc.documentElement
                         if validate :
-                                self.validate()
+                                if self.validate() :
+                                        return True
+                                else :
+                                        self._enrichXML()
+                                        return False
                         else :
                                 self._enrichXML()
+                                return True
 
         # ===========================================================================================
         def parseString(self, xml, validate = False):
@@ -479,6 +551,12 @@ if ( __name__ == &#34;__main__&#34;):
                         validate : boolean, optional
                                 flag to validate the XML file if it contains a Doctype section
 
+                        Returns
+                        -------
+                        boolean
+                                the DOM is valid or not according to the specified DTD
+                                True if there is no DTD
+
                         See Also
                         --------
                         `DOMCompanion.validate`
@@ -491,9 +569,14 @@ if ( __name__ == &#34;__main__&#34;):
                 self.doc = parseString(xml)
                 self.documentElement = self.doc.documentElement
                 if validate :
-                        self.validate()
+                        if self.validate() :
+                                return True
+                        else :
+                                self._enrichXML()
+                                return False
                 else :
                         self._enrichXML()
+                        return True
 
         # ===========================================================================================
         def getElementsByTagName(self, name) :
@@ -536,6 +619,28 @@ if ( __name__ == &#34;__main__&#34;):
                         return None
 
         # ===========================================================================================
+        def getAttributsByIdref(self, id) :
+                &#34;&#34;&#34;
+                        to retrieve an IDREF attributs with an ID
+                        
+                        Parameters
+                        ----------
+                        id : str
+                                the ID to looking for
+
+                        Returns
+                        -------
+                        List(Attr)
+                                the attributs
+                &#34;&#34;&#34;
+                if id in self.lid.keys() :
+                        return self.lid[id]
+                else :
+                        return None
+
+
+
+        # ===========================================================================================
         def toLighter(self, del_spaces = True, del_comments = True, del_pi = True) :
                 &#34;&#34;&#34;
                         to suppress text nodes (with only separators), processing instructions and/or comments
@@ -559,6 +664,14 @@ if ( __name__ == &#34;__main__&#34;):
                 return self
 
         # ===========================================================================================
+
+        def getDTDFile(self, doc) :
+                if self.doc.doctype is not None :
+                        if self.doc.doctype.systemId is not None :
+                                return self.doc.doctype.systemId
+                        else : return None
+                else : return None
+
         def validate(self) :
                 &#34;&#34;&#34;
                         to validate the XML according its DTD (enrich it too). It uses lxml module to validate the XML document.
@@ -571,7 +684,7 @@ if ( __name__ == &#34;__main__&#34;):
                 if self.doc is not None :
                         parser = etree.XMLParser(recover=True, strip_cdata=True)
                         tree = etree.XML(self.doc.toxml(), parser)
-                        dtdFile = self.doc.doctype.systemId
+                        dtdFile = self.getDTDFile(self.doc)
                         if dtdFile is not None :
                                 if _existFile(dtdFile) :
                                         dtd = etree.DTD(dtdFile)
@@ -582,9 +695,10 @@ if ( __name__ == &#34;__main__&#34;):
                                                 print(dtd.error_log.filter_from_errors()[0])
                                                 return False
                                 else :
-                                        print(&#39;Unable ti find the DTD file &#39;,dtdFile)
+                                        print(&#39;Unable to find the DTD file &#39;,dtdFile)
                                         return False
                         else:
+                                self._enrichXML()
                                 return True
                 else :
                         return False
@@ -629,13 +743,15 @@ if ( __name__ == &#34;__main__&#34;):
         def _enrichXML(self) :
                 if self.doc is not None :
                         self.lid = dict()
-                        dtdFile = self.doc.doctype.systemId
+                        dtdFile = self.getDTDFile(self.doc)
                         if dtdFile is not None :
                                 if _existFile(dtdFile) :
                                         le = self._extractDTD(dtdFile)
                                         self._enrichNode(self.doc.documentElement, le)
                                 else :
                                         print(&#39;Unable ti find the DTD file &#39;,dtdFile)
+                        else :
+                                self._enrichNode(self.doc.documentElement, dict())
 
         def _purgeDOM(self, no, del_spaces, del_comments, del_pi) :
                 if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
@@ -701,16 +817,22 @@ if ( __name__ == &#34;__main__&#34;):
 
         def _enrichNode(self, node, le) :
                 if node.nodeType == Node.ELEMENT_NODE :
-                        la = le[node.tagName]
-                        for (att, (definition, status)) in la.items() :
-                                if definition == &#39;ID&#39; :
-                                        nid = node.getAttribute(att)
-                                        self.lid[nid] = node
-                                if node.hasAttribute(att) :
-                                        pass
-                                else :
-                                        if &#39;#&#39; not in status :
-                                                node.setAttribute(att,status) 
+                        if node.tagName in le :
+                                la = le[node.tagName]
+                                for (att, (definition, status)) in la.items() :
+                                        if definition == &#39;ID&#39; :
+                                                nid = node.getAttribute(att)
+                                                self.lid[nid] = node
+                                        if node.hasAttribute(att) :
+                                                pass
+                                        else :
+                                                if &#39;#&#39; not in status :
+                                                        node.setAttribute(att,status)
+                        latt = node.attributes
+                        for i in range(latt.length) :
+                                att = latt.item(i)
+                                if att.name.upper() == &#39;XML:ID&#39; and att.value not in self.lid :
+                                        self.lid[att.value] = node
                         for n in node.childNodes :
                                 self._enrichNode(n,le)</code></pre>
 </details>
@@ -727,6 +849,62 @@ if ( __name__ == &#34;__main__&#34;):
 </dl>
 <h3>Methods</h3>
 <dl>
+<dt id="minidom_ext.DOMCompanion.getAttributsByIdref"><code class="name flex">
+<span>def <span class="ident">getAttributsByIdref</span></span>(<span>self, id)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>to retrieve an IDREF attributs with an ID</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>id</code></strong> :&ensp;<code>str</code></dt>
+<dd>the ID to looking for</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>List(Attr)</code></dt>
+<dd>the attributs</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getAttributsByIdref(self, id) :
+        &#34;&#34;&#34;
+                to retrieve an IDREF attributs with an ID
+                
+                Parameters
+                ----------
+                id : str
+                        the ID to looking for
+
+                Returns
+                -------
+                List(Attr)
+                        the attributs
+        &#34;&#34;&#34;
+        if id in self.lid.keys() :
+                return self.lid[id]
+        else :
+                return None</code></pre>
+</details>
+</dd>
+<dt id="minidom_ext.DOMCompanion.getDTDFile"><code class="name flex">
+<span>def <span class="ident">getDTDFile</span></span>(<span>self, doc)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getDTDFile(self, doc) :
+        if self.doc.doctype is not None :
+                if self.doc.doctype.systemId is not None :
+                        return self.doc.doctype.systemId
+                else : return None
+        else : return None</code></pre>
+</details>
+</dd>
 <dt id="minidom_ext.DOMCompanion.getElementById"><code class="name flex">
 <span>def <span class="ident">getElementById</span></span>(<span>self, id)</span>
 </code></dt>
@@ -817,6 +995,12 @@ if ( __name__ == &#34;__main__&#34;):
 <dt><strong><code>validate</code></strong> :&ensp;<code>boolean</code>, optional</dt>
 <dd>flag to validate the XML file if it contains a Doctype section</dd>
 </dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>boolean</code></dt>
+<dd>the DOM is valid or not according to the specified DTD
+True if there is no DTD</dd>
+</dl>
 <h2 id="see-also">See Also</h2>
 <p><code><a title="minidom_ext.DOMCompanion.validate" href="#minidom_ext.DOMCompanion.validate">DOMCompanion.validate()</a></code></p>
 <h2 id="notes">Notes</h2>
@@ -838,6 +1022,12 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
                 validate : boolean, optional
                         flag to validate the XML file if it contains a Doctype section
 
+                Returns
+                -------
+                boolean
+                        the DOM is valid or not according to the specified DTD
+                        True if there is no DTD
+
                 See Also
                 --------
                 `DOMCompanion.validate`
@@ -851,9 +1041,14 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
                 self.doc = parse(file)
                 self.documentElement = self.doc.documentElement
                 if validate :
-                        self.validate()
+                        if self.validate() :
+                                return True
+                        else :
+                                self._enrichXML()
+                                return False
                 else :
-                        self._enrichXML()</code></pre>
+                        self._enrichXML()
+                        return True</code></pre>
 </details>
 </dd>
 <dt id="minidom_ext.DOMCompanion.parseString"><code class="name flex">
@@ -867,6 +1062,12 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
 <dd>the string that contains the XML</dd>
 <dt><strong><code>validate</code></strong> :&ensp;<code>boolean</code>, optional</dt>
 <dd>flag to validate the XML file if it contains a Doctype section</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>boolean</code></dt>
+<dd>the DOM is valid or not according to the specified DTD
+True if there is no DTD</dd>
 </dl>
 <h2 id="see-also">See Also</h2>
 <p><code><a title="minidom_ext.DOMCompanion.validate" href="#minidom_ext.DOMCompanion.validate">DOMCompanion.validate()</a></code></p>
@@ -889,6 +1090,12 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
                 validate : boolean, optional
                         flag to validate the XML file if it contains a Doctype section
 
+                Returns
+                -------
+                boolean
+                        the DOM is valid or not according to the specified DTD
+                        True if there is no DTD
+
                 See Also
                 --------
                 `DOMCompanion.validate`
@@ -901,9 +1108,14 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
         self.doc = parseString(xml)
         self.documentElement = self.doc.documentElement
         if validate :
-                self.validate()
+                if self.validate() :
+                        return True
+                else :
+                        self._enrichXML()
+                        return False
         else :
-                self._enrichXML()</code></pre>
+                self._enrichXML()
+                return True</code></pre>
 </details>
 </dd>
 <dt id="minidom_ext.DOMCompanion.toLighter"><code class="name flex">
@@ -1042,7 +1254,7 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
         if self.doc is not None :
                 parser = etree.XMLParser(recover=True, strip_cdata=True)
                 tree = etree.XML(self.doc.toxml(), parser)
-                dtdFile = self.doc.doctype.systemId
+                dtdFile = self.getDTDFile(self.doc)
                 if dtdFile is not None :
                         if _existFile(dtdFile) :
                                 dtd = etree.DTD(dtdFile)
@@ -1053,9 +1265,10 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
                                         print(dtd.error_log.filter_from_errors()[0])
                                         return False
                         else :
-                                print(&#39;Unable ti find the DTD file &#39;,dtdFile)
+                                print(&#39;Unable to find the DTD file &#39;,dtdFile)
                                 return False
                 else:
+                        self._enrichXML()
                         return True
         else :
                 return False</code></pre>
@@ -1079,6 +1292,8 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
 <ul class="">
 <li><code><a title="minidom_ext.DOMCompanion.doc" href="#minidom_ext.DOMCompanion.doc">doc</a></code></li>
 <li><code><a title="minidom_ext.DOMCompanion.documentElement" href="#minidom_ext.DOMCompanion.documentElement">documentElement</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.getAttributsByIdref" href="#minidom_ext.DOMCompanion.getAttributsByIdref">getAttributsByIdref</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.getDTDFile" href="#minidom_ext.DOMCompanion.getDTDFile">getDTDFile</a></code></li>
 <li><code><a title="minidom_ext.DOMCompanion.getElementById" href="#minidom_ext.DOMCompanion.getElementById">getElementById</a></code></li>
 <li><code><a title="minidom_ext.DOMCompanion.getElementsByTagName" href="#minidom_ext.DOMCompanion.getElementsByTagName">getElementsByTagName</a></code></li>
 <li><code><a title="minidom_ext.DOMCompanion.parse" href="#minidom_ext.DOMCompanion.parse">parse</a></code></li>

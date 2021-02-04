@@ -182,6 +182,28 @@ class DOMCompanion :
 			return None
 
 	# ===========================================================================================
+	def getAttributsByIdref(self, id) :
+		"""
+			to retrieve an IDREF attributs with an ID
+			
+			Parameters
+			----------
+			id : str
+				the ID to looking for
+
+			Returns
+			-------
+			List(Attr)
+				the attributs
+		"""
+		if id in self.lid.keys() :
+			return self.lid[id]
+		else :
+			return None
+
+
+
+	# ===========================================================================================
 	def toLighter(self, del_spaces = True, del_comments = True, del_pi = True) :
 		"""
 			to suppress text nodes (with only separators), processing instructions and/or comments
