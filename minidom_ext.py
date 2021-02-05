@@ -199,7 +199,7 @@ class DOMCompanion :
 		# if id in self.lid.keys() :
 		# 	return self.lid[id]
 		# else :
-		return list()
+		return self._getIdrefs(self.doc.documentElement, id)
 
 
 
@@ -338,6 +338,23 @@ class DOMCompanion :
 		return no
 
 
+	def _getIdrefs(self, no, value) :
+		idrefAttributes = list()
+		if no.nodeType == Node.ELEMENT_NODE :
+			latt = no.attributes
+			for i in range(latt.length) :
+				att = latt.item(i)
+				if att.value == value :
+					if self.lid[att.value] != no :
+						idrefAttributes.append(att)
+			for n in no.childNodes :
+				if n.nodeType == Node.ELEMENT_NODE :
+					idrefAttributes += self._getIdrefs(n,value)
+		else :
+			pass
+		return idrefAttributes
+
+
 	def _getDTD(self, file) :
 		if _existFile(file) :
 			f = open(file,'r')
@@ -407,3 +424,4 @@ if ( __name__ == "__main__"):
 	print(cine.doc.toxml())
 	print(cine.getElementById('Ka'))
 	print(cine.toLighter().toxml())
+	print(cine.getAttributsByIdref('Ka'))
