@@ -228,7 +228,7 @@ class DOMCompanion :
                 # if id in self.lid.keys() :
                 #       return self.lid[id]
                 # else :
-                return list()
+                return self._getIdrefs(self.doc.documentElement, id)
 
 
 
@@ -257,13 +257,6 @@ class DOMCompanion :
 
         # ===========================================================================================
 
-        def getDTDFile(self, doc) :
-                if self.doc.doctype is not None :
-                        if self.doc.doctype.systemId is not None :
-                                return self.doc.doctype.systemId
-                        else : return None
-                else : return None
-
         def validate(self) :
                 &#34;&#34;&#34;
                         to validate the XML according its DTD (enrich it too). It uses lxml module to validate the XML document.
@@ -276,7 +269,7 @@ class DOMCompanion :
                 if self.doc is not None :
                         parser = etree.XMLParser(recover=True, strip_cdata=True)
                         tree = etree.XML(self.doc.toxml(), parser)
-                        dtdFile = self.getDTDFile(self.doc)
+                        dtdFile = self._getDTDFile()
                         if dtdFile is not None :
                                 if _existFile(dtdFile) :
                                         dtd = etree.DTD(dtdFile)
@@ -332,10 +325,18 @@ class DOMCompanion :
         ########## private methods ##########
         #####################################
 
+        def _getDTDFile(self) :
+                if self.doc.doctype is not None :
+                        if self.doc.doctype.systemId is not None :
+                                return self.doc.doctype.systemId
+                        else : return None
+                else : return None
+
+
         def _enrichXML(self) :
                 if self.doc is not None :
                         self.lid = dict()
-                        dtdFile = self.getDTDFile(self.doc)
+                        dtdFile = self._getDTDFile()
                         if dtdFile is not None :
                                 if _existFile(dtdFile) :
                                         le = self._extractDTD(dtdFile)
@@ -364,6 +365,23 @@ class DOMCompanion :
                 else :
                         pass
                 return no
+
+
+        def _getIdrefs(self, no, value) :
+                idrefAttributes = list()
+                if no.nodeType == Node.ELEMENT_NODE :
+                        latt = no.attributes
+                        for i in range(latt.length) :
+                                att = latt.item(i)
+                                if att.value == value :
+                                        if self.lid[att.value] != no :
+                                                idrefAttributes.append(att)
+                        for n in no.childNodes :
+                                if n.nodeType == Node.ELEMENT_NODE :
+                                        idrefAttributes += self._getIdrefs(n,value)
+                else :
+                        pass
+                return idrefAttributes
 
 
         def _getDTD(self, file) :
@@ -434,7 +452,8 @@ if ( __name__ == &#34;__main__&#34;):
         cine.parse(&#34;semaine10.xml&#34;, True)
         print(cine.doc.toxml())
         print(cine.getElementById(&#39;Ka&#39;))
-        print(cine.toLighter().toxml())</code></pre>
+        print(cine.toLighter().toxml())
+        print(cine.getAttributsByIdref(&#39;Ka&#39;))</code></pre>
 </details>
 </section>
 <section>
@@ -636,7 +655,7 @@ if ( __name__ == &#34;__main__&#34;):
                 # if id in self.lid.keys() :
                 #       return self.lid[id]
                 # else :
-                return list()
+                return self._getIdrefs(self.doc.documentElement, id)
 
 
 
@@ -665,13 +684,6 @@ if ( __name__ == &#34;__main__&#34;):
 
         # ===========================================================================================
 
-        def getDTDFile(self, doc) :
-                if self.doc.doctype is not None :
-                        if self.doc.doctype.systemId is not None :
-                                return self.doc.doctype.systemId
-                        else : return None
-                else : return None
-
         def validate(self) :
                 &#34;&#34;&#34;
                         to validate the XML according its DTD (enrich it too). It uses lxml module to validate the XML document.
@@ -684,7 +696,7 @@ if ( __name__ == &#34;__main__&#34;):
                 if self.doc is not None :
                         parser = etree.XMLParser(recover=True, strip_cdata=True)
                         tree = etree.XML(self.doc.toxml(), parser)
-                        dtdFile = self.getDTDFile(self.doc)
+                        dtdFile = self._getDTDFile()
                         if dtdFile is not None :
                                 if _existFile(dtdFile) :
                                         dtd = etree.DTD(dtdFile)
@@ -740,10 +752,18 @@ if ( __name__ == &#34;__main__&#34;):
         ########## private methods ##########
         #####################################
 
+        def _getDTDFile(self) :
+                if self.doc.doctype is not None :
+                        if self.doc.doctype.systemId is not None :
+                                return self.doc.doctype.systemId
+                        else : return None
+                else : return None
+
+
         def _enrichXML(self) :
                 if self.doc is not None :
                         self.lid = dict()
-                        dtdFile = self.getDTDFile(self.doc)
+                        dtdFile = self._getDTDFile()
                         if dtdFile is not None :
                                 if _existFile(dtdFile) :
                                         le = self._extractDTD(dtdFile)
@@ -772,6 +792,23 @@ if ( __name__ == &#34;__main__&#34;):
                 else :
                         pass
                 return no
+
+
+        def _getIdrefs(self, no, value) :
+                idrefAttributes = list()
+                if no.nodeType == Node.ELEMENT_NODE :
+                        latt = no.attributes
+                        for i in range(latt.length) :
+                                att = latt.item(i)
+                                if att.value == value :
+                                        if self.lid[att.value] != no :
+                                                idrefAttributes.append(att)
+                        for n in no.childNodes :
+                                if n.nodeType == Node.ELEMENT_NODE :
+                                        idrefAttributes += self._getIdrefs(n,value)
+                else :
+                        pass
+                return idrefAttributes
 
 
         def _getDTD(self, file) :
@@ -885,24 +922,7 @@ if ( __name__ == &#34;__main__&#34;):
         # if id in self.lid.keys() :
         #       return self.lid[id]
         # else :
-        return list()</code></pre>
-</details>
-</dd>
-<dt id="minidom_ext.DOMCompanion.getDTDFile"><code class="name flex">
-<span>def <span class="ident">getDTDFile</span></span>(<span>self, doc)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def getDTDFile(self, doc) :
-        if self.doc.doctype is not None :
-                if self.doc.doctype.systemId is not None :
-                        return self.doc.doctype.systemId
-                else : return None
-        else : return None</code></pre>
+        return self._getIdrefs(self.doc.documentElement, id)</code></pre>
 </details>
 </dd>
 <dt id="minidom_ext.DOMCompanion.getElementById"><code class="name flex">
@@ -1254,7 +1274,7 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
         if self.doc is not None :
                 parser = etree.XMLParser(recover=True, strip_cdata=True)
                 tree = etree.XML(self.doc.toxml(), parser)
-                dtdFile = self.getDTDFile(self.doc)
+                dtdFile = self._getDTDFile()
                 if dtdFile is not None :
                         if _existFile(dtdFile) :
                                 dtd = etree.DTD(dtdFile)
@@ -1293,7 +1313,6 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
 <li><code><a title="minidom_ext.DOMCompanion.doc" href="#minidom_ext.DOMCompanion.doc">doc</a></code></li>
 <li><code><a title="minidom_ext.DOMCompanion.documentElement" href="#minidom_ext.DOMCompanion.documentElement">documentElement</a></code></li>
 <li><code><a title="minidom_ext.DOMCompanion.getAttributsByIdref" href="#minidom_ext.DOMCompanion.getAttributsByIdref">getAttributsByIdref</a></code></li>
-<li><code><a title="minidom_ext.DOMCompanion.getDTDFile" href="#minidom_ext.DOMCompanion.getDTDFile">getDTDFile</a></code></li>
 <li><code><a title="minidom_ext.DOMCompanion.getElementById" href="#minidom_ext.DOMCompanion.getElementById">getElementById</a></code></li>
 <li><code><a title="minidom_ext.DOMCompanion.getElementsByTagName" href="#minidom_ext.DOMCompanion.getElementsByTagName">getElementsByTagName</a></code></li>
 <li><code><a title="minidom_ext.DOMCompanion.parse" href="#minidom_ext.DOMCompanion.parse">parse</a></code></li>
