@@ -228,13 +228,6 @@ class DOMCompanion :
 
 	# ===========================================================================================
 
-	def getDTDFile(self, doc) :
-		if self.doc.doctype is not None :
-			if self.doc.doctype.systemId is not None :
-				return self.doc.doctype.systemId
-			else : return None
-		else : return None
-
 	def validate(self) :
 		"""
 			to validate the XML according its DTD (enrich it too). It uses lxml module to validate the XML document.
@@ -247,7 +240,7 @@ class DOMCompanion :
 		if self.doc is not None :
 			parser = etree.XMLParser(recover=True, strip_cdata=True)
 			tree = etree.XML(self.doc.toxml(), parser)
-			dtdFile = self.getDTDFile(self.doc)
+			dtdFile = self._getDTDFile()
 			if dtdFile is not None :
 				if _existFile(dtdFile) :
 					dtd = etree.DTD(dtdFile)
@@ -303,10 +296,18 @@ class DOMCompanion :
 	########## private methods ##########
 	#####################################
 
+	def _getDTDFile(self) :
+		if self.doc.doctype is not None :
+			if self.doc.doctype.systemId is not None :
+				return self.doc.doctype.systemId
+			else : return None
+		else : return None
+
+
 	def _enrichXML(self) :
 		if self.doc is not None :
 			self.lid = dict()
-			dtdFile = self.getDTDFile(self.doc)
+			dtdFile = self._getDTDFile()
 			if dtdFile is not None :
 				if _existFile(dtdFile) :
 					le = self._extractDTD(dtdFile)
