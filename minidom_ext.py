@@ -184,7 +184,7 @@ class DOMCompanion :
 	# ===========================================================================================
 	def getAttributsByIdref(self, id) :
 		"""
-			to retrieve an IDREF attributs with an ID
+			to retrieve IDREF attributs with an ID
 			
 			Parameters
 			----------
@@ -196,10 +196,10 @@ class DOMCompanion :
 			List(Attr)
 				the attributs
 		"""
-		if id in self.lid.keys() :
-			return self.lid[id]
-		else :
-			return None
+		# if id in self.lid.keys() :
+		# 	return self.lid[id]
+		# else :
+		return list()
 
 
 
