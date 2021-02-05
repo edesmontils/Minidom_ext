@@ -213,7 +213,7 @@ class DOMCompanion :
         # ===========================================================================================
         def getAttributsByIdref(self, id) :
                 &#34;&#34;&#34;
-                        to retrieve an IDREF attributs with an ID
+                        to retrieve IDREF attributs with an ID
                         
                         Parameters
                         ----------
@@ -225,10 +225,10 @@ class DOMCompanion :
                         List(Attr)
                                 the attributs
                 &#34;&#34;&#34;
-                if id in self.lid.keys() :
-                        return self.lid[id]
-                else :
-                        return None
+                # if id in self.lid.keys() :
+                #       return self.lid[id]
+                # else :
+                return list()
 
 
 
@@ -621,7 +621,7 @@ if ( __name__ == &#34;__main__&#34;):
         # ===========================================================================================
         def getAttributsByIdref(self, id) :
                 &#34;&#34;&#34;
-                        to retrieve an IDREF attributs with an ID
+                        to retrieve IDREF attributs with an ID
                         
                         Parameters
                         ----------
@@ -633,10 +633,10 @@ if ( __name__ == &#34;__main__&#34;):
                         List(Attr)
                                 the attributs
                 &#34;&#34;&#34;
-                if id in self.lid.keys() :
-                        return self.lid[id]
-                else :
-                        return None
+                # if id in self.lid.keys() :
+                #       return self.lid[id]
+                # else :
+                return list()
 
 
 
@@ -853,7 +853,7 @@ if ( __name__ == &#34;__main__&#34;):
 <span>def <span class="ident">getAttributsByIdref</span></span>(<span>self, id)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>to retrieve an IDREF attributs with an ID</p>
+<div class="desc"><p>to retrieve IDREF attributs with an ID</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>id</code></strong> :&ensp;<code>str</code></dt>
@@ -870,7 +870,7 @@ if ( __name__ == &#34;__main__&#34;):
 </summary>
 <pre><code class="python">def getAttributsByIdref(self, id) :
         &#34;&#34;&#34;
-                to retrieve an IDREF attributs with an ID
+                to retrieve IDREF attributs with an ID
                 
                 Parameters
                 ----------
@@ -882,10 +882,10 @@ if ( __name__ == &#34;__main__&#34;):
                 List(Attr)
                         the attributs
         &#34;&#34;&#34;
-        if id in self.lid.keys() :
-                return self.lid[id]
-        else :
-                return None</code></pre>
+        # if id in self.lid.keys() :
+        #       return self.lid[id]
+        # else :
+        return list()</code></pre>
 </details>
 </dd>
 <dt id="minidom_ext.DOMCompanion.getDTDFile"><code class="name flex">
