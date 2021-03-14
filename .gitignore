@@ -1,2 +1,11 @@
 
 *.pyc
+build/lib/minidom_ext/__init__.py
+build/lib/minidom_ext/minidom_ext.py
+dist/minidom_ext-0.0.1-py2.py3-none-any.whl
+dist/minidom_ext-0.0.1.tar.gz
+minidom_ext.egg-info/dependency_links.txt
+minidom_ext.egg-info/PKG-INFO
+minidom_ext.egg-info/requires.txt
+minidom_ext.egg-info/SOURCES.txt
+minidom_ext.egg-info/top_level.txt
