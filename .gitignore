@@ -9,3 +9,5 @@ minidom_ext.egg-info/PKG-INFO
 minidom_ext.egg-info/requires.txt
 minidom_ext.egg-info/SOURCES.txt
 minidom_ext.egg-info/top_level.txt
+*.whl
+*.gz
