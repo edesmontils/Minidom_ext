@@ -24,6 +24,13 @@ print(cine.toLighter().toxml())
 ```
 
 
+## How to install ?
+
+```
+pip install minidom-ext
+```
+
+
 ## Links
 
 [1] Python 'minidom' : https://docs.python.org/3/library/xml.dom.minidom.html
