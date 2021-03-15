@@ -16,6 +16,8 @@ class DOMCompanion :
 ## Exemple
 
 ```
+from minidom_ext.DOMCompanion import DOMCompanion
+
 cine = DOMCompanion()
 cine.parse("semaine10.xml", True)
 print(cine.doc.toxml())
