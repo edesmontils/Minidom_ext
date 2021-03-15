@@ -420,7 +420,7 @@ class DOMCompanion :
 
 if ( __name__ == "__main__"):
 	cine = DOMCompanion()
-	cine.parse("semaine10.xml", True)
+	cine.parse("../tests/semaine10.xml", True)
 	print(cine.doc.toxml())
 	print(cine.getElementById('Ka'))
 	print(cine.toLighter().toxml())

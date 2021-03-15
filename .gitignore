@@ -11,3 +11,4 @@ minidom_ext.egg-info/SOURCES.txt
 minidom_ext.egg-info/top_level.txt
 *.whl
 *.gz
+build/lib/minidom_ext/DOMCompanion.py
