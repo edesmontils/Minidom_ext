@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 
-from minidom_ext.DOMCompanion import DOMCompanion
+from minidom_ext.DOMCompanion import *
 
 cine = DOMCompanion()
 cine.parse("semaine10.xml", True)
