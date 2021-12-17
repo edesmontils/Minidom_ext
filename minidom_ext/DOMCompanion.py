@@ -57,7 +57,7 @@ class DOMCompanion :
 		self.lid = dict()
 		if doc is not None :
 			self.documentElement = doc.documentElement
-			self.enrichXML()
+			self._enrichXML()
 			
 
 	# ===========================================================================================
@@ -316,27 +316,40 @@ class DOMCompanion :
 					print('Unable ti find the DTD file ',dtdFile)
 			else :
 				self._enrichNode(self.doc.documentElement, dict())
+		else : self._enrichNode(self.doc.documentElement, dict())
 
 	def _purgeDOM(self, no, del_spaces, del_comments, del_pi) :
-		if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
-			toDel = []
-			for n in no.childNodes :
-				if del_spaces and n.nodeType == Node.TEXT_NODE and n.data.strip('\t \n') == '' :
-					toDel.append(n)
-				elif del_comments and n.nodeType == Node.COMMENT_NODE :
-					toDel.append(n)
-				elif del_pi and n.nodeType == Node.PROCESSING_INSTRUCTION_NODE :
-					toDel.append(n)
-				elif n.nodeType == Node.ELEMENT_NODE :
+		# if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
+		# 	toDel = []
+		# 	for n in no.childNodes :
+		# 		if del_spaces and n.nodeType == Node.TEXT_NODE and n.data.strip('\t \n') == '' :
+		# 			toDel.append(n)
+		# 		elif del_comments and n.nodeType == Node.COMMENT_NODE :
+		# 			toDel.append(n)
+		# 		elif del_pi and n.nodeType == Node.PROCESSING_INSTRUCTION_NODE :
+		# 			toDel.append(n)
+		# 		elif n.nodeType == Node.ELEMENT_NODE :
+		# 			self._purgeDOM(n,del_spaces,del_comments, del_pi)
+		# 	for n in toDel :
+		# 		no.removeChild(n)
+		# elif no.nodeType == Node.DOCUMENT_TYPE_NODE :
+		# 	pass
+		# else :
+		# 	pass
+		# return no
+		if (no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE]) and (no.hasChildNodes()) :
+			n = no.firstChild
+			while (isinstance(n,Node)) :
+				toDel = (del_spaces and n.nodeType == Node.TEXT_NODE and n.data.strip('\t \n') == '') \
+				     or (del_comments and n.nodeType == Node.COMMENT_NODE) \
+				     or (del_pi and n.nodeType == Node.PROCESSING_INSTRUCTION_NODE)
+				nextN = n.nextSibling
+				if toDel : 
+					no.removeChild(n)
+				elif n.nodeType == Node.ELEMENT_NODE : 
 					self._purgeDOM(n,del_spaces,del_comments, del_pi)
-			for n in toDel :
-				no.removeChild(n)
-		elif no.nodeType == Node.DOCUMENT_TYPE_NODE :
-			pass
-		else :
-			pass
+				n = nextN
 		return no
-
 
 	def _getIdrefs(self, no, value) :
 		idrefAttributes = list()
@@ -408,7 +421,7 @@ class DOMCompanion :
 						pass
 					else :
 						if '#' not in status :
-							node.setAttribute(att,status)
+							node.setAttribute(att,status)		
 			latt = node.attributes
 			for i in range(latt.length) :
 				att = latt.item(i)
