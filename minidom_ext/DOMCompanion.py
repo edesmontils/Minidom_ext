@@ -11,7 +11,7 @@ from lxml import etree  # http://lxml.de/index.html#documentation
 import xpath #https://github.com/jackjansen/py-dom-xpath-six
 
 
-# pdoc3 --html --force minidom_ext.py
+# pdoc3 --html --force minidom_ext
 
 #==================================================
 #============ Tools ===============================
