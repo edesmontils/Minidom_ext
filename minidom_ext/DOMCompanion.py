@@ -8,6 +8,8 @@ import os
 from xml.dom.minidom import Node, Element, parse, parseString
 import re
 from lxml import etree  # http://lxml.de/index.html#documentation
+import xpath #https://github.com/jackjansen/py-dom-xpath-six
+
 
 # pdoc3 --html --force minidom_ext.py
 
@@ -140,6 +142,29 @@ class DOMCompanion :
 		else :
 			self._enrichXML()
 			return True
+
+	# ===========================================================================================
+	def xpath(self, xp) :
+		"""
+			search XML with XPath
+
+			Parameters
+			----------
+			name : xp
+				the XPath expression to search in the DOM
+
+			Returns
+			-------
+			nodeList
+				nodes finded by xp
+
+			Notes
+			-----
+			See https://docs.python.org/3/library/xml.dom.minidom.html
+			    https://github.com/jackjansen/py-dom-xpath-six
+		"""
+		return xpath.find(xp, self.doc)
+
 
 	# ===========================================================================================
 	def getElementsByTagName(self, name) :
