@@ -12,6 +12,7 @@ class DOMCompanion :
 -   def getAttributsByIdref(self, id) : to retrieve attributs that refers to an ID
 -	def toLighter(self, del_spaces = True, del_comments = True, del_pi = True) : to suppress text nodes (with only separators), processing instructions and/or comments
 -	def validate(self) : to validate the XML according its DTD (enrich it too)
+-	def xpath(self, xp) : to explore the XML tree using XPath  1.0
 
 ## Exemple
 
