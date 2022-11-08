@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.9.1" />
-<title>minidom_ext API documentation</title>
+<title>minidom_ext.DOMCompanion API documentation</title>
 <meta name="description" content="Functions to improve xml.dom.minidom tools in Python." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>minidom_ext</code></h1>
+<h1 class="title">Module <code>minidom_ext.DOMCompanion</code></h1>
 </header>
 <section id="section-intro">
 <p>Functions to improve xml.dom.minidom tools in Python.</p>
@@ -37,6 +37,8 @@ import os
 from xml.dom.minidom import Node, Element, parse, parseString
 import re
 from lxml import etree  # http://lxml.de/index.html#documentation
+import xpath #https://github.com/jackjansen/py-dom-xpath-six
+
 
 # pdoc3 --html --force minidom_ext.py
 
@@ -86,7 +88,7 @@ class DOMCompanion :
                 self.lid = dict()
                 if doc is not None :
                         self.documentElement = doc.documentElement
-                        self.enrichXML()
+                        self._enrichXML()
                         
 
         # ===========================================================================================
@@ -169,6 +171,29 @@ class DOMCompanion :
                 else :
                         self._enrichXML()
                         return True
+
+        # ===========================================================================================
+        def xpath(self, xp) :
+                &#34;&#34;&#34;
+                        search XML with XPath
+
+                        Parameters
+                        ----------
+                        name : xp
+                                the XPath expression to search in the DOM
+
+                        Returns
+                        -------
+                        nodeList
+                                nodes finded by xp
+
+                        Notes
+                        -----
+                        See https://docs.python.org/3/library/xml.dom.minidom.html
+                            https://github.com/jackjansen/py-dom-xpath-six
+                &#34;&#34;&#34;
+                return xpath.find(xp, self.doc)
+
 
         # ===========================================================================================
         def getElementsByTagName(self, name) :
@@ -345,27 +370,40 @@ class DOMCompanion :
                                         print(&#39;Unable ti find the DTD file &#39;,dtdFile)
                         else :
                                 self._enrichNode(self.doc.documentElement, dict())
+                else : self._enrichNode(self.doc.documentElement, dict())
 
         def _purgeDOM(self, no, del_spaces, del_comments, del_pi) :
-                if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
-                        toDel = []
-                        for n in no.childNodes :
-                                if del_spaces and n.nodeType == Node.TEXT_NODE and n.data.strip(&#39;\t \n&#39;) == &#39;&#39; :
-                                        toDel.append(n)
-                                elif del_comments and n.nodeType == Node.COMMENT_NODE :
-                                        toDel.append(n)
-                                elif del_pi and n.nodeType == Node.PROCESSING_INSTRUCTION_NODE :
-                                        toDel.append(n)
-                                elif n.nodeType == Node.ELEMENT_NODE :
+                # if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
+                #       toDel = []
+                #       for n in no.childNodes :
+                #               if del_spaces and n.nodeType == Node.TEXT_NODE and n.data.strip(&#39;\t \n&#39;) == &#39;&#39; :
+                #                       toDel.append(n)
+                #               elif del_comments and n.nodeType == Node.COMMENT_NODE :
+                #                       toDel.append(n)
+                #               elif del_pi and n.nodeType == Node.PROCESSING_INSTRUCTION_NODE :
+                #                       toDel.append(n)
+                #               elif n.nodeType == Node.ELEMENT_NODE :
+                #                       self._purgeDOM(n,del_spaces,del_comments, del_pi)
+                #       for n in toDel :
+                #               no.removeChild(n)
+                # elif no.nodeType == Node.DOCUMENT_TYPE_NODE :
+                #       pass
+                # else :
+                #       pass
+                # return no
+                if (no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE]) and (no.hasChildNodes()) :
+                        n = no.firstChild
+                        while (isinstance(n,Node)) :
+                                toDel = (del_spaces and n.nodeType == Node.TEXT_NODE and n.data.strip(&#39;\t \n&#39;) == &#39;&#39;) \
+                                     or (del_comments and n.nodeType == Node.COMMENT_NODE) \
+                                     or (del_pi and n.nodeType == Node.PROCESSING_INSTRUCTION_NODE)
+                                nextN = n.nextSibling
+                                if toDel : 
+                                        no.removeChild(n)
+                                elif n.nodeType == Node.ELEMENT_NODE : 
                                         self._purgeDOM(n,del_spaces,del_comments, del_pi)
-                        for n in toDel :
-                                no.removeChild(n)
-                elif no.nodeType == Node.DOCUMENT_TYPE_NODE :
-                        pass
-                else :
-                        pass
+                                n = nextN
                 return no
-
 
         def _getIdrefs(self, no, value) :
                 idrefAttributes = list()
@@ -437,7 +475,7 @@ class DOMCompanion :
                                                 pass
                                         else :
                                                 if &#39;#&#39; not in status :
-                                                        node.setAttribute(att,status)
+                                                        node.setAttribute(att,status)           
                         latt = node.attributes
                         for i in range(latt.length) :
                                 att = latt.item(i)
@@ -449,7 +487,7 @@ class DOMCompanion :
 
 if ( __name__ == &#34;__main__&#34;):
         cine = DOMCompanion()
-        cine.parse(&#34;semaine10.xml&#34;, True)
+        cine.parse(&#34;../tests/semaine10.xml&#34;, True)
         print(cine.doc.toxml())
         print(cine.getElementById(&#39;Ka&#39;))
         print(cine.toLighter().toxml())
@@ -465,7 +503,7 @@ if ( __name__ == &#34;__main__&#34;):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="minidom_ext.DOMCompanion"><code class="flex name class">
+<dt id="minidom_ext.DOMCompanion.DOMCompanion"><code class="flex name class">
 <span>class <span class="ident">DOMCompanion</span></span>
 <span>(</span><span>doc=None)</span>
 </code></dt>
@@ -513,7 +551,7 @@ if ( __name__ == &#34;__main__&#34;):
                 self.lid = dict()
                 if doc is not None :
                         self.documentElement = doc.documentElement
-                        self.enrichXML()
+                        self._enrichXML()
                         
 
         # ===========================================================================================
@@ -596,6 +634,29 @@ if ( __name__ == &#34;__main__&#34;):
                 else :
                         self._enrichXML()
                         return True
+
+        # ===========================================================================================
+        def xpath(self, xp) :
+                &#34;&#34;&#34;
+                        search XML with XPath
+
+                        Parameters
+                        ----------
+                        name : xp
+                                the XPath expression to search in the DOM
+
+                        Returns
+                        -------
+                        nodeList
+                                nodes finded by xp
+
+                        Notes
+                        -----
+                        See https://docs.python.org/3/library/xml.dom.minidom.html
+                            https://github.com/jackjansen/py-dom-xpath-six
+                &#34;&#34;&#34;
+                return xpath.find(xp, self.doc)
+
 
         # ===========================================================================================
         def getElementsByTagName(self, name) :
@@ -772,27 +833,40 @@ if ( __name__ == &#34;__main__&#34;):
                                         print(&#39;Unable ti find the DTD file &#39;,dtdFile)
                         else :
                                 self._enrichNode(self.doc.documentElement, dict())
+                else : self._enrichNode(self.doc.documentElement, dict())
 
         def _purgeDOM(self, no, del_spaces, del_comments, del_pi) :
-                if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
-                        toDel = []
-                        for n in no.childNodes :
-                                if del_spaces and n.nodeType == Node.TEXT_NODE and n.data.strip(&#39;\t \n&#39;) == &#39;&#39; :
-                                        toDel.append(n)
-                                elif del_comments and n.nodeType == Node.COMMENT_NODE :
-                                        toDel.append(n)
-                                elif del_pi and n.nodeType == Node.PROCESSING_INSTRUCTION_NODE :
-                                        toDel.append(n)
-                                elif n.nodeType == Node.ELEMENT_NODE :
+                # if no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE] :
+                #       toDel = []
+                #       for n in no.childNodes :
+                #               if del_spaces and n.nodeType == Node.TEXT_NODE and n.data.strip(&#39;\t \n&#39;) == &#39;&#39; :
+                #                       toDel.append(n)
+                #               elif del_comments and n.nodeType == Node.COMMENT_NODE :
+                #                       toDel.append(n)
+                #               elif del_pi and n.nodeType == Node.PROCESSING_INSTRUCTION_NODE :
+                #                       toDel.append(n)
+                #               elif n.nodeType == Node.ELEMENT_NODE :
+                #                       self._purgeDOM(n,del_spaces,del_comments, del_pi)
+                #       for n in toDel :
+                #               no.removeChild(n)
+                # elif no.nodeType == Node.DOCUMENT_TYPE_NODE :
+                #       pass
+                # else :
+                #       pass
+                # return no
+                if (no.nodeType in [Node.ELEMENT_NODE, Node.DOCUMENT_NODE]) and (no.hasChildNodes()) :
+                        n = no.firstChild
+                        while (isinstance(n,Node)) :
+                                toDel = (del_spaces and n.nodeType == Node.TEXT_NODE and n.data.strip(&#39;\t \n&#39;) == &#39;&#39;) \
+                                     or (del_comments and n.nodeType == Node.COMMENT_NODE) \
+                                     or (del_pi and n.nodeType == Node.PROCESSING_INSTRUCTION_NODE)
+                                nextN = n.nextSibling
+                                if toDel : 
+                                        no.removeChild(n)
+                                elif n.nodeType == Node.ELEMENT_NODE : 
                                         self._purgeDOM(n,del_spaces,del_comments, del_pi)
-                        for n in toDel :
-                                no.removeChild(n)
-                elif no.nodeType == Node.DOCUMENT_TYPE_NODE :
-                        pass
-                else :
-                        pass
+                                n = nextN
                 return no
-
 
         def _getIdrefs(self, no, value) :
                 idrefAttributes = list()
@@ -864,7 +938,7 @@ if ( __name__ == &#34;__main__&#34;):
                                                 pass
                                         else :
                                                 if &#39;#&#39; not in status :
-                                                        node.setAttribute(att,status)
+                                                        node.setAttribute(att,status)           
                         latt = node.attributes
                         for i in range(latt.length) :
                                 att = latt.item(i)
@@ -875,18 +949,18 @@ if ( __name__ == &#34;__main__&#34;):
 </details>
 <h3>Instance variables</h3>
 <dl>
-<dt id="minidom_ext.DOMCompanion.doc"><code class="name">var <span class="ident">doc</span></code></dt>
+<dt id="minidom_ext.DOMCompanion.DOMCompanion.doc"><code class="name">var <span class="ident">doc</span></code></dt>
 <dd>
 <div class="desc"><p>the DOM structure : Node.DOCUMENT_NODE</p></div>
 </dd>
-<dt id="minidom_ext.DOMCompanion.documentElement"><code class="name">var <span class="ident">documentElement</span></code></dt>
+<dt id="minidom_ext.DOMCompanion.DOMCompanion.documentElement"><code class="name">var <span class="ident">documentElement</span></code></dt>
 <dd>
 <div class="desc"><p>equivalent to doc.documentElement : Node.ELEMENT_NODE</p></div>
 </dd>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="minidom_ext.DOMCompanion.getAttributsByIdref"><code class="name flex">
+<dt id="minidom_ext.DOMCompanion.DOMCompanion.getAttributsByIdref"><code class="name flex">
 <span>def <span class="ident">getAttributsByIdref</span></span>(<span>self, id)</span>
 </code></dt>
 <dd>
@@ -925,7 +999,7 @@ if ( __name__ == &#34;__main__&#34;):
         return self._getIdrefs(self.doc.documentElement, id)</code></pre>
 </details>
 </dd>
-<dt id="minidom_ext.DOMCompanion.getElementById"><code class="name flex">
+<dt id="minidom_ext.DOMCompanion.DOMCompanion.getElementById"><code class="name flex">
 <span>def <span class="ident">getElementById</span></span>(<span>self, id)</span>
 </code></dt>
 <dd>
@@ -964,7 +1038,7 @@ if ( __name__ == &#34;__main__&#34;):
                 return None</code></pre>
 </details>
 </dd>
-<dt id="minidom_ext.DOMCompanion.getElementsByTagName"><code class="name flex">
+<dt id="minidom_ext.DOMCompanion.DOMCompanion.getElementsByTagName"><code class="name flex">
 <span>def <span class="ident">getElementsByTagName</span></span>(<span>self, name)</span>
 </code></dt>
 <dd>
@@ -1003,7 +1077,7 @@ if ( __name__ == &#34;__main__&#34;):
                 return None</code></pre>
 </details>
 </dd>
-<dt id="minidom_ext.DOMCompanion.parse"><code class="name flex">
+<dt id="minidom_ext.DOMCompanion.DOMCompanion.parse"><code class="name flex">
 <span>def <span class="ident">parse</span></span>(<span>self, file, validate=False)</span>
 </code></dt>
 <dd>
@@ -1022,7 +1096,7 @@ if ( __name__ == &#34;__main__&#34;):
 True if there is no DTD</dd>
 </dl>
 <h2 id="see-also">See Also</h2>
-<p><code><a title="minidom_ext.DOMCompanion.validate" href="#minidom_ext.DOMCompanion.validate">DOMCompanion.validate()</a></code></p>
+<p><code><a title="minidom_ext.DOMCompanion.DOMCompanion.validate" href="#minidom_ext.DOMCompanion.DOMCompanion.validate">DOMCompanion.validate()</a></code></p>
 <h2 id="notes">Notes</h2>
 <p>if a DTD is specified, uses it to add default attributes and to collect IDs
 See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://docs.python.org/3/library/xml.dom.minidom.html</a></p></div>
@@ -1071,7 +1145,7 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
                         return True</code></pre>
 </details>
 </dd>
-<dt id="minidom_ext.DOMCompanion.parseString"><code class="name flex">
+<dt id="minidom_ext.DOMCompanion.DOMCompanion.parseString"><code class="name flex">
 <span>def <span class="ident">parseString</span></span>(<span>self, xml, validate=False)</span>
 </code></dt>
 <dd>
@@ -1090,7 +1164,7 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
 True if there is no DTD</dd>
 </dl>
 <h2 id="see-also">See Also</h2>
-<p><code><a title="minidom_ext.DOMCompanion.validate" href="#minidom_ext.DOMCompanion.validate">DOMCompanion.validate()</a></code></p>
+<p><code><a title="minidom_ext.DOMCompanion.DOMCompanion.validate" href="#minidom_ext.DOMCompanion.DOMCompanion.validate">DOMCompanion.validate()</a></code></p>
 <h2 id="notes">Notes</h2>
 <p>if a DTD is specified, uses it to add default attributes and to collect IDs
 See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://docs.python.org/3/library/xml.dom.minidom.html</a></p></div>
@@ -1138,7 +1212,7 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
                 return True</code></pre>
 </details>
 </dd>
-<dt id="minidom_ext.DOMCompanion.toLighter"><code class="name flex">
+<dt id="minidom_ext.DOMCompanion.DOMCompanion.toLighter"><code class="name flex">
 <span>def <span class="ident">toLighter</span></span>(<span>self, del_spaces=True, del_comments=True, del_pi=True)</span>
 </code></dt>
 <dd>
@@ -1184,7 +1258,7 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
         return self</code></pre>
 </details>
 </dd>
-<dt id="minidom_ext.DOMCompanion.toprettyxml"><code class="name flex">
+<dt id="minidom_ext.DOMCompanion.DOMCompanion.toprettyxml"><code class="name flex">
 <span>def <span class="ident">toprettyxml</span></span>(<span>self, indent='\t', newl='\n', encoding=None, standalone=None)</span>
 </code></dt>
 <dd>
@@ -1216,7 +1290,7 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
         return self.doc.toprettyxml(ident, newl, encoding, standalone)</code></pre>
 </details>
 </dd>
-<dt id="minidom_ext.DOMCompanion.toxml"><code class="name flex">
+<dt id="minidom_ext.DOMCompanion.DOMCompanion.toxml"><code class="name flex">
 <span>def <span class="ident">toxml</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1248,7 +1322,7 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
         return self.doc.toxml()</code></pre>
 </details>
 </dd>
-<dt id="minidom_ext.DOMCompanion.validate"><code class="name flex">
+<dt id="minidom_ext.DOMCompanion.DOMCompanion.validate"><code class="name flex">
 <span>def <span class="ident">validate</span></span>(<span>self)</span>
 </code></dt>
 <dd>
@@ -1294,6 +1368,50 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
                 return False</code></pre>
 </details>
 </dd>
+<dt id="minidom_ext.DOMCompanion.DOMCompanion.xpath"><code class="name flex">
+<span>def <span class="ident">xpath</span></span>(<span>self, xp)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>search XML with XPath</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>name</code></strong> :&ensp;<code>xp</code></dt>
+<dd>the XPath expression to search in the DOM</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>nodeList</code></dt>
+<dd>nodes finded by xp</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://docs.python.org/3/library/xml.dom.minidom.html</a>
+<a href="https://github.com/jackjansen/py-dom-xpath-six">https://github.com/jackjansen/py-dom-xpath-six</a></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def xpath(self, xp) :
+        &#34;&#34;&#34;
+                search XML with XPath
+
+                Parameters
+                ----------
+                name : xp
+                        the XPath expression to search in the DOM
+
+                Returns
+                -------
+                nodeList
+                        nodes finded by xp
+
+                Notes
+                -----
+                See https://docs.python.org/3/library/xml.dom.minidom.html
+                    https://github.com/jackjansen/py-dom-xpath-six
+        &#34;&#34;&#34;
+        return xpath.find(xp, self.doc)</code></pre>
+</details>
+</dd>
 </dl>
 </dd>
 </dl>
@@ -1305,22 +1423,28 @@ See <a href="https://docs.python.org/3/library/xml.dom.minidom.html">https://doc
 <ul></ul>
 </div>
 <ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="minidom_ext" href="index.html">minidom_ext</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="minidom_ext.DOMCompanion" href="#minidom_ext.DOMCompanion">DOMCompanion</a></code></h4>
+<h4><code><a title="minidom_ext.DOMCompanion.DOMCompanion" href="#minidom_ext.DOMCompanion.DOMCompanion">DOMCompanion</a></code></h4>
 <ul class="">
-<li><code><a title="minidom_ext.DOMCompanion.doc" href="#minidom_ext.DOMCompanion.doc">doc</a></code></li>
-<li><code><a title="minidom_ext.DOMCompanion.documentElement" href="#minidom_ext.DOMCompanion.documentElement">documentElement</a></code></li>
-<li><code><a title="minidom_ext.DOMCompanion.getAttributsByIdref" href="#minidom_ext.DOMCompanion.getAttributsByIdref">getAttributsByIdref</a></code></li>
-<li><code><a title="minidom_ext.DOMCompanion.getElementById" href="#minidom_ext.DOMCompanion.getElementById">getElementById</a></code></li>
-<li><code><a title="minidom_ext.DOMCompanion.getElementsByTagName" href="#minidom_ext.DOMCompanion.getElementsByTagName">getElementsByTagName</a></code></li>
-<li><code><a title="minidom_ext.DOMCompanion.parse" href="#minidom_ext.DOMCompanion.parse">parse</a></code></li>
-<li><code><a title="minidom_ext.DOMCompanion.parseString" href="#minidom_ext.DOMCompanion.parseString">parseString</a></code></li>
-<li><code><a title="minidom_ext.DOMCompanion.toLighter" href="#minidom_ext.DOMCompanion.toLighter">toLighter</a></code></li>
-<li><code><a title="minidom_ext.DOMCompanion.toprettyxml" href="#minidom_ext.DOMCompanion.toprettyxml">toprettyxml</a></code></li>
-<li><code><a title="minidom_ext.DOMCompanion.toxml" href="#minidom_ext.DOMCompanion.toxml">toxml</a></code></li>
-<li><code><a title="minidom_ext.DOMCompanion.validate" href="#minidom_ext.DOMCompanion.validate">validate</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.DOMCompanion.doc" href="#minidom_ext.DOMCompanion.DOMCompanion.doc">doc</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.DOMCompanion.documentElement" href="#minidom_ext.DOMCompanion.DOMCompanion.documentElement">documentElement</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.DOMCompanion.getAttributsByIdref" href="#minidom_ext.DOMCompanion.DOMCompanion.getAttributsByIdref">getAttributsByIdref</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.DOMCompanion.getElementById" href="#minidom_ext.DOMCompanion.DOMCompanion.getElementById">getElementById</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.DOMCompanion.getElementsByTagName" href="#minidom_ext.DOMCompanion.DOMCompanion.getElementsByTagName">getElementsByTagName</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.DOMCompanion.parse" href="#minidom_ext.DOMCompanion.DOMCompanion.parse">parse</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.DOMCompanion.parseString" href="#minidom_ext.DOMCompanion.DOMCompanion.parseString">parseString</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.DOMCompanion.toLighter" href="#minidom_ext.DOMCompanion.DOMCompanion.toLighter">toLighter</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.DOMCompanion.toprettyxml" href="#minidom_ext.DOMCompanion.DOMCompanion.toprettyxml">toprettyxml</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.DOMCompanion.toxml" href="#minidom_ext.DOMCompanion.DOMCompanion.toxml">toxml</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.DOMCompanion.validate" href="#minidom_ext.DOMCompanion.DOMCompanion.validate">validate</a></code></li>
+<li><code><a title="minidom_ext.DOMCompanion.DOMCompanion.xpath" href="#minidom_ext.DOMCompanion.DOMCompanion.xpath">xpath</a></code></li>
 </ul>
 </li>
 </ul>
